@@ -1,0 +1,2979 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123A63">
+<title>TUBBY — Carregamento de Tubos de PEAD</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.85em%22 font-size=%2290%22>%E2%9A%A1</text></svg>">
+<style>
+:root {
+  --steel-dark:#245C94; --steel-mid:#4F7396; --steel-light:#9CC0E0;
+  --concrete:#EEF3F8; --concrete-card:#FFFFFF; --line:#D6E0EA;
+  --signal:#245C94; --signal-dark:#123A63;
+  --accent:#245C94; --on-accent:#F4F8FC;
+  --success:#3F7D5A; --success-bg:#E6EFE8; --danger:#B3402C; --danger-bg:#F6E4DF;
+  --text:#0E2440; --text-soft:#4F7396;
+  --font-body:"Sora","Inter","Segoe UI",Roboto,-apple-system,sans-serif;
+  --font-mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --radius:32px;
+  color-scheme:light;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--concrete);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+
+.top-bar {
+  background: var(--concrete-card);
+  color: var(--text);
+  padding: 40px 20px 36px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+
+.top-bar::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--signal-dark), var(--signal));
+  pointer-events: none;
+}
+
+
+.hero-logo {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-bottom: 14px; animation: heroIn .5s ease;
+}
+.hero-logo-word { display: flex; align-items: center; }
+.speed-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  color: var(--signal); background: rgba(156,192,224,.14); border: 1px solid rgba(156,192,224,.35);
+  padding: 5px 12px; border-radius: 999px; margin-top: 14px;
+}
+@keyframes heroIn {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-logo { animation: none; }
+}
+
+.top-bar-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+
+.top-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  background: rgba(156,192,224, 0.16);
+  color: var(--signal);
+  border: 1px solid rgba(156,192,224, 0.4);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.top-bar h1 {
+  font-size: clamp(22px, 4vw, 30px);
+  margin: 0 0 8px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--steel-dark);
+}
+body[data-theme="dark"] .top-bar h1 { color: #fff; }
+
+.top-sub { margin: 0; color: var(--text-soft); font-size: 14.5px; }
+
+.container {
+  max-width: 640px;
+  margin: -26px auto 40px;
+  padding: 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  z-index: 2;
+}
+
+.card {
+  background: var(--concrete-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 1px 2px rgba(18, 58, 99, 0.04), 0 8px 24px rgba(18, 58, 99, 0.06);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: var(--steel-dark);
+}
+body[data-theme="dark"] .card-title { color: #fff; }
+
+.number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--signal);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.truck-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-truck {
+  padding: 16px 12px;
+  font-size: 15px;
+  font-weight: 700;
+  border: 2px solid var(--line);
+  background: var(--concrete);
+  color: var(--steel-mid);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-truck:hover { border-color: var(--steel-light); }
+
+.btn-truck.active {
+  background: var(--steel-dark);
+  border-color: var(--steel-dark);
+  color: #fff;
+}
+
+.card-visual { text-align: center; }
+
+.truck-image-wrap {
+  width: 100%;
+  min-height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--concrete);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.truck-image { width: 100%; max-height: 260px; object-fit: contain; display: block; }
+
+.image-placeholder {
+  color: var(--text-soft);
+  font-size: 14px;
+  padding: 40px 20px;
+}
+
+.truck-name { margin: 4px 0 2px; font-size: 18px; color: var(--steel-dark); }
+body[data-theme="dark"] .truck-name { color: #fff; }
+.truck-dimensions { margin: 0; font-size: 13.5px; color: var(--text-soft); font-family: var(--font-mono); }
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  margin: 16px 0 6px;
+}
+
+.field-select, .field-input {
+  width: 100%;
+  padding: 13px 14px;
+  font-size: 16px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--concrete-card);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+.field-select:focus, .field-input:focus {
+  outline: none;
+  border-color: var(--signal);
+}
+
+.field-select:disabled, .field-input:disabled {
+  background: var(--concrete);
+  color: var(--text-soft);
+  cursor: not-allowed;
+}
+
+.error-message {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 22px;
+  background: var(--concrete);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--signal-dark), var(--signal));
+  border-radius: 999px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.progress-fill.overflow {
+  background: linear-gradient(90deg, #8F3220, var(--danger));
+}
+
+.percentage-text {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 54px;
+  text-align: right;
+  color: var(--steel-dark);
+}
+body[data-theme="dark"] .percentage-text { color: #fff; }
+
+.load-status {
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  font-size: 14.5px;
+  margin-bottom: 18px;
+}
+
+.load-status.ok { background: var(--success-bg); color: var(--success); }
+.load-status.exceeds { background: var(--danger-bg); color: var(--danger); }
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.result-item {
+  background: var(--concrete);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.result-label { font-size: 11.5px; color: var(--text-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+.result-value { font-size: 18px; font-weight: 800; color: var(--steel-dark); font-family: var(--font-mono); }
+body[data-theme="dark"] .result-value { color: #fff; }
+
+.footer {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  padding: 10px 20px 30px;
+}
+
+.footer code {
+  background: var(--line);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+@media (max-width: 420px) {
+  .result-grid { grid-template-columns: 1fr; }
+}
+
+.topnav {
+  background: var(--concrete-card);
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--line);
+}
+.topnav-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+}
+.topnav-brand { text-decoration: none; display: flex; align-items: center; cursor: pointer; }
+.topnav-links { display: flex; align-items: center; gap: 6px; }
+.topnav-link {
+  color: var(--text-soft);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+}
+.topnav-link:hover { background: var(--concrete); color: var(--text); }
+.topnav-link.active { background: rgba(156,192,224,.12); color: var(--signal-dark); }
+.topnav-lang {
+  color: var(--signal-dark);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  border: 1px solid rgba(156,192,224,.4);
+  padding: 5px 10px;
+  border-radius: 999px;
+  margin-left: 6px;
+  cursor: pointer;
+  background: none;
+}
+.topnav-lang:hover { background: rgba(156,192,224,.12); }
+
+.page-wrap {
+  max-width: 900px;
+  margin: 30px auto 50px;
+  padding: 0 18px;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.page-header h1 { font-size: 22px; color: var(--steel-dark); margin: 0 0 4px; }
+body[data-theme="dark"] .page-header h1 { color: #fff; }
+.page-header p { margin: 0; color: var(--text-soft); font-size: 13.5px; }
+
+.btn-link {
+  display: inline-block;
+  background: var(--signal);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13.5px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.btn-link:hover { background: var(--signal-dark); }
+.btn-secondary-link {
+  display: inline-block;
+  background: var(--concrete);
+  color: var(--steel-mid);
+  padding: 9px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.btn-danger-link {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: var(--font-body);
+}
+
+.loadings-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--concrete-card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.loadings-table th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  background: var(--concrete);
+  padding: 10px 14px;
+  font-weight: 700;
+}
+.loadings-table td {
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13.5px;
+  color: var(--text);
+}
+.loadings-table a, .loadings-table button.link-like { color: var(--steel-mid); font-weight: 600; text-decoration: none; margin-right: 12px; background: none; border: none; cursor: pointer; font-size: 13.5px; font-family: var(--font-body); padding: 0; }
+body[data-theme="dark"] .loadings-table a, body[data-theme="dark"] .loadings-table button.link-like { color: #C6D0DB; }
+.loadings-table a:hover, .loadings-table button.link-like:hover { text-decoration: underline; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: 14px; }
+
+.form-card {
+  background: var(--concrete-card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.form-card h2 {
+  font-size: 14px; color: var(--steel-dark); margin: 0 0 14px;
+  text-transform: uppercase; letter-spacing: .03em;
+}
+body[data-theme="dark"] .form-card h2 { color: #fff; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-group label {
+  display: block; font-size: 12.5px; font-weight: 600; color: var(--text-soft); margin-bottom: 5px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 10px 12px; font-size: 14px; border: 2px solid var(--line);
+  border-radius: 8px; font-family: var(--font-body); background: var(--concrete-card); color: var(--text);
+}
+.form-group textarea { resize: vertical; min-height: 70px; }
+
+.item-row {
+  display: grid;
+  gap: 8px;
+  align-items: end;
+  padding: 10px;
+  background: var(--concrete);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+.item-row.pipes { grid-template-columns: 2fr 1fr auto; }
+.item-row.dims { grid-template-columns: 2fr 0.8fr 1fr 1fr 1fr 1fr auto; }
+.item-row.simple { grid-template-columns: 2fr 1fr 1fr auto; }
+.item-row input, .item-row select {
+  padding: 8px 9px; font-size: 13px; border: 1.5px solid var(--line); border-radius: 6px;
+  background: var(--concrete-card); color: var(--text); font-family: var(--font-body);
+}
+.item-row .mini-label { font-size: 10px; color: var(--text-soft); margin-bottom: 2px; display:block; }
+.btn-remove-row {
+  background: var(--danger-bg); color: var(--danger); border: none; border-radius: 6px;
+  padding: 8px 10px; font-size: 12px; font-weight: 700; cursor: pointer; height: 36px;
+}
+.btn-add-row {
+  background: none; border: 1.5px dashed var(--steel-light); color: var(--steel-mid);
+  padding: 9px; border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  width: 100%; margin-top: 4px; font-family: var(--font-body);
+}
+.btn-add-row:hover { background: var(--concrete); }
+
+.form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+
+.summary-card {
+  background: var(--concrete-card); border: 1px solid var(--line); border-radius: 16px; padding: 28px;
+}
+.summary-header {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+  border-bottom: 2px solid var(--steel-dark); padding-bottom: 16px; margin-bottom: 18px; flex-wrap: wrap;
+}
+body[data-theme="dark"] .summary-header { border-bottom-color: var(--signal); }
+.summary-header h1 { font-size: 21px; color: var(--steel-dark); margin: 0 0 6px; }
+body[data-theme="dark"] .summary-header h1 { color: #fff; }
+.summary-meta { font-size: 12.5px; color: var(--text-soft); line-height: 1.7; }
+.summary-badge {
+  display: inline-block; line-height: 0;
+}
+.fit-pill { padding: 7px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; display: inline-block; }
+.fit-pill.ok { background: var(--success-bg); color: var(--success); }
+.fit-pill.no { background: var(--danger-bg); color: var(--danger); }
+
+.summary-section { margin-bottom: 20px; }
+.summary-section h3 {
+  font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-soft);
+  margin: 0 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 6px;
+}
+.summary-table { width: 100%; border-collapse: collapse; }
+.summary-table td { padding: 6px 4px; font-size: 13.5px; border-bottom: 1px solid var(--line); }
+.summary-table td.num { text-align: right; font-family: var(--font-mono); }
+.summary-empty { color: var(--text-soft); font-size: 13px; font-style: italic; }
+
+.summary-totals {
+  display: flex; gap: 22px; margin-top: 18px; padding-top: 16px; border-top: 2px solid var(--steel-dark);
+  flex-wrap: wrap;
+}
+body[data-theme="dark"] .summary-totals { border-top-color: var(--signal); }
+.summary-total-item .label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; }
+.summary-total-item .value { font-size: 19px; font-weight: 800; color: var(--steel-dark); font-family: var(--font-mono); }
+body[data-theme="dark"] .summary-total-item .value { color: #fff; }
+
+.summary-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+@media print {
+  .topnav, .summary-actions, .page-header a, .page-header button { display: none !important; }
+  .page-wrap { margin: 0; max-width: none; }
+  .summary-card { border: none; box-shadow: none; }
+}
+
+/* ==========================================================================
+   REAL-DATA CALCULATOR ADDITIONS (bobinas / barras / referência)
+   ========================================================================== */
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.segmented button {
+  padding: 12px 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 2px solid var(--line);
+  background: var(--concrete);
+  color: var(--steel-mid);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.spec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.spec-grid .field-label { margin-top: 10px; }
+.vehicle-source-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin: 4px 0 2px;
+}
+.vehicle-source-tag.oficial { background: rgba(30,142,90,.12); color: var(--success); border: 1px solid rgba(30,142,90,.3); }
+.vehicle-source-tag.referencia { background: rgba(156,192,224,.14); color: var(--signal-dark); border: 1px solid rgba(156,192,224,.35); }
+.vehicle-source-tag.personalizado { background: rgba(156,192,224,.14); color: var(--steel-mid); border: 1px solid rgba(156,192,224,.3); }
+.btn-save-vehicle {
+  background: none; border: 1.5px dashed var(--steel-light); color: var(--steel-mid);
+  padding: 8px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  font-family: var(--font-body); margin-top: 10px;
+}
+.btn-save-vehicle:hover { background: var(--concrete); }
+.segmented button.active {
+  background: var(--steel-dark);
+  border-color: var(--steel-dark);
+  color: #fff;
+}
+
+.vehicle-icon-wrap {
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--concrete);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+.vehicle-icon-wrap svg { width: 100%; max-width: 320px; height: auto; }
+.visual-pair { display: flex; gap: 12px; align-items: center; justify-content: center; }
+.visual-pair > .vehicle-icon-wrap { flex: 1 1 0; min-width: 0; }
+
+.spec-note {
+  background: var(--concrete);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--text-soft);
+  margin-top: 12px;
+  line-height: 1.6;
+}
+.spec-note strong { color: var(--text); }
+.spec-note .tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  background: rgba(156,192,224,.14);
+  color: var(--signal-dark);
+  border: 1px solid rgba(156,192,224,.35);
+  padding: 1px 7px;
+  border-radius: 999px;
+  margin-right: 6px;
+}
+
+.ref-section { margin-bottom: 26px; }
+.ref-section h2 {
+  font-size: 15px; color: var(--steel-dark); margin: 0 0 4px;
+}
+body[data-theme="dark"] .ref-section h2 { color: #fff; }
+.ref-section p.lede { color: var(--text-soft); font-size: 13px; margin: 0 0 12px; }
+.ref-table-wrap { overflow-x: auto; }
+.ref-table {
+  width: 100%; min-width: 480px; border-collapse: collapse; background: var(--concrete-card);
+  border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 13px;
+}
+.ref-table th {
+  text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-soft);
+  background: var(--concrete); padding: 8px 12px; font-weight: 700;
+}
+.ref-table td { padding: 9px 12px; border-top: 1px solid var(--line); }
+.info-list { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.9; color: var(--text); }
+.info-list li { margin-bottom: 2px; }
+.limits-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 10px; margin-top: 10px;
+}
+.limit-chip {
+  background: var(--concrete); border-radius: 10px; padding: 10px 12px; text-align: center;
+}
+.limit-chip .v { font-family: var(--font-mono); font-weight: 800; font-size: 16px; color: var(--steel-dark); }
+body[data-theme="dark"] .limit-chip .v { color: #fff; }
+.limit-chip .l { font-size: 10.5px; color: var(--text-soft); text-transform: uppercase; margin-top: 2px; }
+
+.source-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-soft);
+  margin-top: 6px;
+}
+
+:root {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+.topnav { padding-top: env(safe-area-inset-top, 0px); }
+
+/* ===== NOVA IDENTIDADE: minimalista, tech, fluida, "gordinha" ===== */
+body{background:var(--concrete);transition:background .4s,color .4s}
+#app{position:relative;z-index:1}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.4;z-index:0;pointer-events:none;animation:float 20s ease-in-out infinite}
+.blob.b1{width:420px;height:420px;background:#9CC0E0;top:-140px;right:-120px}
+.blob.b2{width:360px;height:360px;background:#9CC0E0;bottom:-120px;left:-120px;animation-delay:-9s}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-40px,50px) scale(1.12)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card,.form-card,.summary-card,.ref-section{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+.topnav{top:calc(env(safe-area-inset-top,0px) + 8px);padding:0 10px 0 22px;margin:8px 14px 0;max-width:920px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb,var(--concrete-card) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+@media (min-width:960px){.topnav{margin-left:auto;margin-right:auto}}
+.topnav-inner{height:60px}
+.topnav-brand,.hero-logo,.summary-badge{color:var(--steel-dark)}
+.topnav-link{padding:10px 18px;border-radius:999px}
+.topnav-link.active{background:var(--concrete);color:var(--steel-dark)}
+.topnav-lang{border-radius:999px}
+.top-bar{background:transparent;border:0;padding:72px 20px 84px}
+.top-bar::after,.speed-tag{display:none}
+.top-bar h1{font-size:clamp(30px,7vw,52px);line-height:1.05;letter-spacing:-.04em;font-weight:800;margin:0 0 16px;background:linear-gradient(90deg,#9CC0E0,var(--steel-dark) 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.top-sub{font-size:16px;max-width:460px;margin:0 auto}
+.container{margin:-28px auto 56px;max-width:680px;gap:24px}
+.card,.form-card,.summary-card{border-radius:36px;padding:32px;box-shadow:0 20px 50px -28px rgba(18,58,99,.35)}
+.card-title{font-size:18px;letter-spacing:-.02em;margin-bottom:22px}
+.number{width:30px;height:30px;background:var(--accent);color:var(--on-accent)}
+.truck-options,.segmented,.spec-grid,.result-grid{gap:14px}
+.btn-truck,.segmented button{border-radius:999px;padding:16px 18px;background:var(--concrete);transition:all .25s cubic-bezier(.2,.8,.2,1)}
+.btn-truck:hover,.segmented button:hover{transform:translateY(-2px);border-color:var(--steel-light)}
+.btn-truck.active,.segmented button.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.field-select,.field-input,.form-group input,.form-group select,.form-group textarea{border-radius:20px;padding:16px 18px;border-width:1.5px}
+.field-select:focus,.field-input:focus{border-color:var(--steel-light);box-shadow:0 0 0 5px rgba(156,192,224,.18)}
+.truck-image-wrap,.vehicle-icon-wrap{border-radius:28px;padding:16px}
+.result-item{border-radius:24px;padding:18px 20px}
+.result-value{font-size:22px}
+.progress-track{height:30px}
+.progress-fill{background:linear-gradient(90deg,#9CC0E0,#245C94);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.progress-fill.overflow{background:linear-gradient(90deg,#8F3220,var(--danger))}
+.load-status{border-radius:999px;padding:14px}
+.btn-link,.btn-secondary-link{border-radius:999px;padding:13px 24px;transition:transform .25s,box-shadow .25s}
+.btn-link{background:var(--accent);color:var(--on-accent)}
+.btn-link:hover{background:var(--accent);transform:translateY(-2px);box-shadow:0 12px 26px -12px var(--accent)}
+.btn-add-row,.btn-save-vehicle{border-radius:999px;padding:12px}
+.btn-remove-row{border-radius:999px}
+.item-row{border-radius:22px;padding:14px}
+.item-row input,.item-row select{border-radius:12px}
+.loadings-table,.ref-table{border-radius:28px}
+.limit-chip,.spec-note{border-radius:22px}
+.fit-pill,.vehicle-source-tag,.spec-note .tag{border-radius:999px}
+.footer{padding:10px 20px 44px}
+.vehicle-icon-wrap svg{filter:none}
+@media (prefers-reduced-motion:reduce){.blob,.card,.form-card,.summary-card,.ref-section{animation:none}*{transition:none!important}}
+
+/* ===== VERSÃO CLARA + VELOCIDADE ===== */
+body{background:radial-gradient(900px 420px at 85% -8%,rgba(156,192,224,.38),transparent 70%),radial-gradient(700px 380px at 0% 100%,rgba(156,192,224,.18),transparent 70%),var(--concrete)}
+.speed{position:fixed;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.speed i{position:absolute;left:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#9CC0E0 65%,#245C94);opacity:.18;transform:translateX(-45vw) skewX(-30deg);animation:dash linear infinite}
+@keyframes dash{to{transform:translateX(145vw) skewX(-30deg)}}
+.blob{display:none}
+.card,.form-card,.summary-card{box-shadow:0 18px 44px -30px rgba(18,58,99,.28);transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s}
+.card:hover{transform:translateY(-3px);box-shadow:0 26px 50px -28px rgba(18,58,99,.34)}
+.card,.form-card,.summary-card,.ref-section{animation-duration:.4s;animation-timing-function:cubic-bezier(.16,1,.3,1)}
+.top-bar h1{font-style:italic;letter-spacing:-.045em;background:linear-gradient(90deg,#9CC0E0,#245C94 80%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.1em}
+.topnav{background:color-mix(in srgb,#fff 78%,transparent)}
+.btn-truck,.segmented button{transition:all .2s cubic-bezier(.16,1,.3,1)}
+.progress-fill{position:relative;overflow:hidden;background:linear-gradient(90deg,#9CC0E0,#9CC0E0 55%,#245C94)}
+.progress-fill::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.6) 50%,transparent 70%);transform:translateX(-100%);animation:sheen 1.6s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes sheen{to{transform:translateX(100%)}}
+.btn-link{transition:transform .2s,box-shadow .2s}
+.btn-link:hover{transform:translateY(-2px) skewX(-4deg)}
+@media (prefers-reduced-motion:reduce){.speed i,.progress-fill::after{animation:none}}
+.height-alert{display:inline-block;margin-top:6px;padding:8px 14px;border-radius:16px;background:var(--danger-bg);color:var(--danger);font-weight:700}
+.hide-field{display:none}
+.pack-badge{margin:6px 0 10px}
+.pack-tag{display:inline-block;padding:10px 22px;border-radius:999px;font-weight:700;font-size:1.05rem}
+.pack-caixa{background:var(--success-bg);color:var(--success)}
+.pack-pallet{background:var(--concrete);color:var(--accent);border:1.5px solid var(--accent)}
+.pack-granel{background:var(--danger-bg);color:var(--danger)}
+.pack-padrao{background:var(--concrete);color:var(--text-soft)}
+.pack-motivo{color:var(--muted);font-size:.9rem;margin:0 0 18px}
+.recommend-note{margin:12px 0 0;padding:12px 18px;border-radius:20px;background:var(--success-bg);color:var(--success);font-weight:600;font-size:.85rem}
+.recommend-note[hidden]{display:none}
+.conv-note{margin:12px 0 0;padding:10px 18px;border-radius:999px;background:var(--concrete);border:1px solid var(--line);color:var(--accent);font-size:.85rem;font-weight:600;display:inline-block}
+.conv-note[hidden]{display:none}
+#r-blen-custom{margin-top:12px}
+
+/* ===== TEMA AZUL + FLUIDEZ ===== */
+:root{--accent:#245C94;--signal:#245C94;--ease:cubic-bezier(.16,1,.3,1)}
+html{scroll-behavior:smooth}
+::selection{background:rgba(156,192,224,.28)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.top-bar-content>*{animation:fadeUp .6s var(--ease) both}
+.top-bar-content>*:nth-child(2){animation-delay:.08s}
+.top-bar-content>*:nth-child(3){animation-delay:.16s}
+.page-wrap{animation:fadeUp .45s var(--ease) both}
+#calc-body{display:flex;flex-direction:column;gap:24px}
+#calc-body>.card:nth-child(1){animation-delay:.04s}
+#calc-body>.card:nth-child(2){animation-delay:.10s}
+#calc-body>.card:nth-child(3){animation-delay:.16s}
+.page-wrap>.ref-section:nth-child(n+3){animation-delay:.08s}
+.page-wrap>.ref-section:nth-child(n+5){animation-delay:.16s}
+.card:hover{transform:none}
+.card-result:not([hidden]){animation:pop .5s var(--ease) both}
+.topnav{box-shadow:0 10px 30px -22px rgba(18,58,99,.55)}
+.topnav-link{transition:background .2s,color .2s,transform .2s}
+.topnav-link.active{background:rgba(156,192,224,.14);color:var(--steel-dark)}
+.number{background:linear-gradient(135deg,#9CC0E0,#245C94)}
+.segmented button.active,.btn-truck.active{background:linear-gradient(135deg,#9CC0E0,#245C94);border-color:transparent;box-shadow:0 12px 24px -14px rgba(18,58,99,.8)}
+.btn-link{background:linear-gradient(135deg,#9CC0E0,#245C94)}
+.btn-link:hover{background:linear-gradient(135deg,#9CC0E0,#245C94);transform:translateY(-2px);box-shadow:0 14px 28px -14px rgba(18,58,99,.8)}
+.btn-link:disabled{opacity:.6;cursor:progress;transform:none}
+.btn-truck:active,.segmented button:active,.btn-link:active,.btn-add-row:active,.btn-remove-row:active,.topnav-link:active{transform:scale(.96)}
+.btn-add-row,.btn-remove-row{transition:background .2s,transform .2s,border-color .2s}
+.btn-add-row:hover{border-color:var(--accent);color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid rgba(156,192,224,.55);outline-offset:2px}
+.field-select,.field-input,.item-row input,.item-row select{transition:border-color .2s,box-shadow .2s,background-color .2s}
+.field-select:hover:not(:disabled),.field-input:hover{border-color:var(--steel-light)}
+.item-row input:focus,.item-row select:focus{outline:none;border-color:var(--steel-light);box-shadow:0 0 0 4px rgba(156,192,224,.18)}
+.field-select,.item-row select{-webkit-appearance:none;appearance:none;cursor:pointer;padding-right:44px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23245C94' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-size:18px}
+.item-row select{padding-right:32px;background-position:right 8px center;background-size:16px;width:100%}
+.item-row input{width:100%}
+.field-select:disabled{opacity:.6}
+.result-item{transition:transform .25s var(--ease),box-shadow .25s}
+.result-item:hover{transform:translateY(-2px);box-shadow:0 12px 24px -18px rgba(18,58,99,.5)}
+.vehicle-icon-wrap svg{animation:bob 4.5s ease-in-out infinite}
+.visual-pair>.vehicle-icon-wrap:nth-child(2) svg{animation-delay:-2.2s}
+.item-row{animation:fadeUp .35s var(--ease) both}
+.conv-note:not([hidden]),.spec-note:not([hidden]){animation:fadeUp .3s var(--ease) both}
+.error-message:not([hidden]){animation:shake .3s ease}
+.load-status{transition:background .3s,color .3s}
+@media (max-width:480px){
+  .card,.form-card,.summary-card{padding:22px;border-radius:28px}
+  .topnav{padding:0 6px 0 16px}.topnav-link{padding:9px 12px}
+  .top-bar{padding:48px 18px 64px}
+  .visual-pair{gap:8px}
+  .item-row.pipes{grid-template-columns:1fr auto}
+  .item-row.pipes>div:first-child{grid-column:1/-1}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ===== PASTEL + LAYOUT COMPACTO ===== */
+.segmented button.active,.btn-truck.active,.btn-link,.btn-link:hover,.number{background:linear-gradient(135deg,#D3E3FB,#A9C8F5);color:#27446F;border-color:transparent;box-shadow:0 10px 22px -16px rgba(18,58,99,.7)}
+.top-bar{padding:22px 20px 18px}
+.hero-logo{display:none}
+.top-bar h1{font-size:clamp(22px,3.4vw,34px);margin:0 0 6px;background:linear-gradient(90deg,#9CC0E0,#245C94 75%);-webkit-background-clip:text;background-clip:text}
+.top-sub{font-size:14px}
+.container{margin:0 auto 20px;max-width:680px;gap:16px}
+#calc-body{gap:16px}
+.card,.form-card,.summary-card{border-radius:26px;padding:22px 24px;box-shadow:0 18px 44px -30px rgba(18,58,99,.45)}
+.card-title{margin-bottom:10px}
+.container>.card:first-child{padding:6px;border-radius:999px}
+.segmented{gap:4px;margin:0;grid-template-columns:repeat(3,1fr)}
+.segmented button{border:0;border-radius:999px;background:transparent;padding:11px 8px;font-size:13.5px;transition:background .25s,color .25s,transform .2s}
+.segmented button:not(.active):hover{background:rgba(156,192,224,.16)}
+.field-label{margin-top:10px}
+.field-select,.field-input{min-height:46px;padding-top:10px;padding-bottom:10px}
+/* etapa 1 em duas colunas */
+#calc-body>.card:first-child{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:14px}
+#calc-body>.card:first-child>*{grid-column:1/-1;min-width:0}
+#calc-body>.card:first-child>.card-title{grid-row:1}
+#calc-body>.card:first-child>label:nth-of-type(1){grid-area:2/1/auto/2}
+#calc-body>.card:first-child>select:nth-of-type(1){grid-area:3/1/auto/2}
+#calc-body>.card:first-child>label:nth-of-type(2){grid-area:2/2/auto/3}
+#calc-body>.card:first-child>select:nth-of-type(2){grid-area:3/2/auto/3}
+#calc-body>.card:first-child>label:nth-of-type(3){grid-area:4/1/auto/2}
+#calc-body>.card:first-child>select:nth-of-type(3){grid-area:5/1/auto/2}
+#calc-body>.card:first-child>label:nth-of-type(4){grid-area:4/2/auto/3}
+#calc-body>.card:first-child>select:nth-of-type(4){grid-area:5/2/auto/3}
+#calc-body>.card:first-child>#m-mode-wrap{grid-area:2/2/4/3}
+.card-visual{padding:14px}
+.vehicle-icon-wrap{min-height:0;padding:8px}
+.vehicle-icon-wrap svg{max-height:84px}
+.footer{padding:8px 18px 18px;font-size:12px}
+@media (max-width:959px){
+  .card-visual:has(~ .card-result:not([hidden])){display:none}
+}
+@media (max-width:520px){
+  .top-bar{padding:16px 18px 12px}.top-sub{display:none}
+  .card,.form-card,.summary-card{padding:18px;border-radius:22px}
+  .vehicle-icon-wrap svg{max-height:56px}
+  #calc-body>.card:first-child>label:nth-of-type(1){grid-area:2/1/auto/3}
+  #calc-body>.card:first-child>select:nth-of-type(1){grid-area:3/1/auto/3}
+  #calc-body>.card:first-child>label:nth-of-type(2){grid-area:4/1/auto/2}
+  #calc-body>.card:first-child>select:nth-of-type(2){grid-area:5/1/auto/2}
+  #calc-body>.card:first-child>label:nth-of-type(3){grid-area:4/2/auto/3}
+  #calc-body>.card:first-child>select:nth-of-type(3){grid-area:5/2/auto/3}
+  #calc-body>.card:first-child>label:nth-of-type(4){grid-area:6/1/auto/3}
+  #calc-body>.card:first-child>select:nth-of-type(4){grid-area:7/1/auto/3}
+  #calc-body>.card:first-child>#m-mode-wrap{grid-area:4/1/auto/3}
+}
+@media (min-width:960px){
+  .topnav{max-width:1080px}
+  .container{max-width:1080px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;align-items:start}
+  #calc-body{display:contents}
+  .container>.card,#calc-body>.card{grid-column:1}
+  #calc-body>.card-visual,#calc-body>.card-result{grid-column:2;grid-row:1/span 3;position:sticky;top:88px}
+  #calc-body>.card-result{max-height:calc(100vh - 104px);overflow:auto;scrollbar-width:thin}
+  #calc-body>.card-visual:has(~ .card-result:not([hidden])){display:none}
+  #calc-body>.card-visual{padding:28px 22px;min-height:300px;display:flex;flex-direction:column;justify-content:center;gap:16px;background:linear-gradient(160deg,#fff,#E9F0F7)}
+  #calc-body>.card-visual::after{content:"Preencha o pedido ao lado — o resultado aparece aqui.";color:var(--steel-mid,#4F7396);font-size:14px;text-align:center}
+  .vehicle-icon-wrap svg{max-height:130px}
+}
+
+html{min-height:100%}body{min-height:100vh;background-attachment:fixed}
+.conv-note{border-radius:16px}
+.result-grid{grid-template-columns:1fr 1fr!important;gap:10px}
+.result-item{padding:12px 14px}
+@media (min-width:521px){
+  #calc-body>.card:first-child{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #calc-body>.card:first-child>label:nth-of-type(3){grid-area:2/3/auto/4}
+  #calc-body>.card:first-child>select:nth-of-type(3){grid-area:3/3/auto/4}
+  #calc-body>.card:first-child>label:nth-of-type(4){grid-area:4/1/auto/4}
+  #calc-body>.card:first-child>select:nth-of-type(4){grid-area:5/1/auto/4}
+  #calc-body>.card:first-child>#m-mode-wrap{grid-area:2/2/4/4}
+}
+
+@media (min-width:521px){
+  #calc-body>.card:first-child:has(#m-mode-wrap){grid-template-columns:repeat(2,minmax(0,1fr))}
+  #calc-body>.card:first-child>#m-mode-wrap{grid-area:2/2/4/3}
+}
+.vehicle-icon-wrap:empty{display:none}
+
+/* ===== PALETA #0E2440 #123A63 #245C94 #9CC0E0 #EEF3F8 ===== */
+:root{--concrete:#EEF3F8;--concrete-card:#FFFFFF;--accent:#245C94;--signal:#245C94;--signal-dark:#123A63}
+body{background:radial-gradient(900px 420px at 85% -8%,rgba(156,192,224,.45),transparent 70%),radial-gradient(700px 380px at 0% 100%,rgba(156,192,224,.3),transparent 70%),#EEF3F8;background-attachment:fixed}
+.topnav{background:color-mix(in srgb,#FFFFFF 85%,transparent)}
+.segmented button.active,.btn-truck.active,.btn-link,.number{background:linear-gradient(135deg,#245C94,#123A63);color:#EEF3F8;box-shadow:0 10px 22px -14px rgba(14,36,64,.7)}
+.btn-link:hover{background:#0E2440;color:#EEF3F8}
+.topnav-link.active{background:rgba(156,192,224,.35);color:#123A63}
+.top-bar h1{background:linear-gradient(90deg,#245C94,#0E2440 80%);-webkit-background-clip:text;background-clip:text}
+.top-bar-content{max-width:1040px}
+.progress-fill{background:linear-gradient(90deg,#9CC0E0,#245C94)}
+@media (min-width:960px){#calc-body>.card-visual{background:linear-gradient(160deg,#FFFFFF,#E3EDF6)}}
+/* campos sem corte: diâmetro e frota em largura total */
+#calc-body>.card:first-child,#calc-body>.card:first-child:has(#m-mode-wrap){grid-template-columns:repeat(2,minmax(0,1fr))}
+#calc-body>.card:first-child>label:nth-of-type(1){grid-area:2/1/auto/3}
+#calc-body>.card:first-child>select:nth-of-type(1){grid-area:3/1/auto/3}
+#calc-body>.card:first-child>label:nth-of-type(2){grid-area:4/1/auto/2}
+#calc-body>.card:first-child>select:nth-of-type(2){grid-area:5/1/auto/2}
+#calc-body>.card:first-child>label:nth-of-type(3){grid-area:4/2/auto/3}
+#calc-body>.card:first-child>select:nth-of-type(3){grid-area:5/2/auto/3}
+#calc-body>.card:first-child>label:nth-of-type(4){grid-area:6/1/auto/3}
+#calc-body>.card:first-child>select:nth-of-type(4){grid-area:7/1/auto/3}
+#calc-body>.card:first-child>#m-mode-wrap{grid-area:4/1/auto/3}
+.field-select,.item-row select{text-overflow:ellipsis}
+.field-select{font-size:15.5px;padding-left:16px;padding-right:40px;background-position:right 14px center}
+@media (min-width:960px){.top-bar{padding:14px 20px 12px}.container{margin-bottom:8px}.footer{padding:6px 18px 10px}}
+@media (max-width:520px){.field-select{font-size:14.5px}}
+.segmented button.active,.btn-truck.active,.btn-link,.number{color:#fff}
+.field-select:disabled{background-color:#F4F8FC}
+
+/* ===== ABA GÁS (laranja) ===== */
+.segmented{grid-template-columns:repeat(4,1fr)}
+.segmented button.seg-gas:not(.active){color:#C45A0C}
+.segmented button.seg-gas:not(.active):hover{background:rgba(232,116,30,.14)}
+body.gas-mode{--accent:#E8741E;--signal:#E8741E;--signal-dark:#B4530F;--steel-light:#F2A46A}
+body.gas-mode .segmented button.active,body.gas-mode .number,body.gas-mode .btn-link{background:linear-gradient(135deg,#F08A3C,#C45A0C);color:#fff;box-shadow:0 10px 22px -14px rgba(180,83,15,.8)}
+body.gas-mode .btn-link:hover{background:#B4530F}
+body.gas-mode .progress-fill{background:linear-gradient(90deg,#F7B987,#E8741E)}
+body.gas-mode .card-title,body.gas-mode .percentage-text,body.gas-mode .result-value{color:#B4530F}
+body.gas-mode .top-bar h1{background:linear-gradient(90deg,#E8741E,#7A3606 80%);-webkit-background-clip:text;background-clip:text}
+body.gas-mode .card{border-color:#F4D9C2}
+body.gas-mode .container>.card:first-child{border-color:#F2B98C}
+body.gas-mode .field-select:focus,body.gas-mode .field-input:focus{border-color:#F2A46A;box-shadow:0 0 0 4px rgba(232,116,30,.2)}
+body.gas-mode button:focus-visible,body.gas-mode select:focus-visible,body.gas-mode input:focus-visible{outline-color:rgba(232,116,30,.6)}
+body.gas-mode .field-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E8741E' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+body.gas-mode .conv-note,body.gas-mode .spec-note .tag{background:#FFF1E4;color:#B4530F;border-color:#F4D9C2}
+body.gas-mode .vehicle-icon-wrap{background:#FFF4EA}
+body.gas-mode .vehicle-icon-wrap svg{filter:hue-rotate(175deg) saturate(1.5)}
+@media (min-width:960px){body.gas-mode #calc-body>.card-visual{background:linear-gradient(160deg,#fff,#FFEEDD)}}
+#g-clen-wrap{margin-top:6px}
+@media (max-width:520px){.segmented button{font-size:12.5px;padding:11px 2px}}
+
+/* ===== PESO ===== */
+.item-row.pipes{grid-template-columns:2fr .9fr 1fr auto}
+#b-wsdr-wrap,#r-wgrid{margin-top:4px}
+#r-wgrid>div{min-width:0}
+@media (max-width:480px){.item-row.pipes{grid-template-columns:1fr 1fr auto}.item-row.pipes>div:first-child{grid-column:1/-1}#r-wgrid{grid-template-columns:1fr}}
+/* captura da imagem: cartão inteiro, sem extras */
+.card-result.capturing{max-height:none!important;overflow:visible!important;animation:none!important}
+.card-result.capturing [data-no-capture]{display:none!important}
+
+/* ===== FRETE ===== */
+.frete{margin-top:14px;padding:16px 18px;border-radius:20px;background:#F4F8FC;border:1px solid #D6E0EA}
+.frete-title{font-size:12px;text-transform:uppercase;letter-spacing:.03em;font-weight:700;color:#4F7396}
+.frete-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:8px}
+.frete-grid>div{min-width:0}
+.frete-grid select,.frete-grid input{width:100%;min-height:40px;border:1.5px solid #D6E0EA;border-radius:12px;padding:6px 10px;font:inherit;font-size:14px;background-color:#fff;color:#0E2440}
+.frete-grid select{-webkit-appearance:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23245C94' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:14px;text-overflow:ellipsis}
+.frete-total{font-size:28px;font-weight:800;color:#245C94;margin-top:10px;font-variant-numeric:tabular-nums}
+.frete-rota{font-size:13px;font-weight:600;color:#0E2440;margin-top:2px}
+.frete-split{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:13px;color:#4F7396}
+.frete-split b{color:#0E2440;font-variant-numeric:tabular-nums}
+.frete-list{margin:6px 0 0 18px;padding:0;font-size:13px;color:#4F7396}
+.frete-note,.frete-hint{margin:8px 0 0;font-size:12px;color:#4F7396}
+.frete-fonte{font-size:11.5px;font-weight:600;color:#B4530F;margin-left:4px}.frete-fonte.ok{color:#3F7D5A}
+.extra-wrap{margin-top:16px;padding-top:14px;border-top:1px dashed #D6E0EA}.extra-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#4F7396;margin-bottom:8px}
+.frete-orig{font-size:11.5px;color:#4F7396;margin-top:2px}
+.frete-cep-msg{margin:6px 0 0;font-size:12px;color:#4F7396;min-height:0}.frete-cep-msg:empty{display:none}.frete-cep-msg.ok{color:#3F7D5A;font-weight:600}.frete-cep-msg.warn{color:#B4530F}
+.card-result.capturing .frete-note{display:none}
+body.gas-mode .frete{background:#FFF4EA;border-color:#F4D9C2}
+body.gas-mode .frete-total{color:#B4530F}
+@media (max-width:380px){.frete-grid{grid-template-columns:1fr}}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="speed" aria-hidden="true"><i style="top:12%;width:34vw;animation-duration:9.9s;animation-delay:-1s"></i><i style="top:24%;width:22vw;animation-duration:7.2s;animation-delay:-3s"></i><i style="top:38%;width:40vw;animation-duration:11.7s;animation-delay:-2s"></i><i style="top:52%;width:26vw;animation-duration:8.6s;animation-delay:-0s"></i><i style="top:66%;width:36vw;animation-duration:10.4s;animation-delay:-4s"></i><i style="top:79%;width:20vw;animation-duration:6.8s;animation-delay:-1.5s"></i><i style="top:90%;width:30vw;animation-duration:9.0s;animation-delay:-3.5s"></i></div>
+<nav class="topnav" id="topnav"></nav>
+<div id="app"></div>
+<script>
+// ==========================================================================
+// TUBBY — client-only port, rebuilt on the REAL data from
+// procedure P-GF-019 "Carregamento de Tubos de PEAD" (revisão 09).
+// All data lives in localStorage (per-browser). No server, no accounts.
+// ==========================================================================
+
+// --- 1) REAL DATA — BOBINAS (coils), from Tabelas 1 a 6 -------------------
+// Vehicle keys: truck_aberto (Caminhão Truck Aberto 8 m), bobinadeira (Bobinadeira 12 m).
+// Bobinas de 75 a 125 mm: vão bobinadeira e caminhões.
+// null = capacidade não informada no procedimento para essa combinação.
+const BOBINAS_VEHICLES = {
+  truck_aberto: { label: "Caminhão Truck Aberto", sub: "carroceria 8 m", kind: "truck" },
+  bobinadeira: { label: "Bobinadeira", sub: "carroceria 12 m", kind: "trailer" },
+};
+
+const BOBINAS_DATA = {
+  "20": { variants: {
+    "SDR 11": {
+      "100": { de_bobina: 840, largura: 230, carreta_graneleira: 428, carreta_bau: 540, truck_aberto: 300, gf_fgs: 212 },
+      "50": { de_bobina: 840, largura: 130, carreta_graneleira: 856, carreta_bau: 1080, truck_aberto: 600, gf_fgs: 424 },
+    },
+  } },
+  "25": { variants: {
+    "SDR 11": {
+      "100": { de_bobina: 900, largura: 240, carreta_graneleira: 380, carreta_bau: 440, truck_aberto: 230, gf_fgs: 170 },
+      "50": { de_bobina: 740, largura: 240, carreta_graneleira: 517, carreta_bau: 583, truck_aberto: 320, gf_fgs: 268 },
+    },
+  } },
+  "32": { variants: {
+    "SDR 11": {
+      "100": { de_bobina: 1000, largura: 260, carreta_graneleira: 340, carreta_bau: 380, truck_aberto: 200, gf_fgs: 150 },
+      "50": { de_bobina: 890, largura: 240, carreta_graneleira: 410, carreta_bau: 470, truck_aberto: 260, gf_fgs: 180 },
+    },
+  } },
+  "40": { variants: {
+    "SDR 11": {
+      "100": { de_bobina: 1160, largura: 290, carreta_graneleira: 136, carreta_bau: 220, truck_aberto: 90, gf_fgs: 72 },
+      "50": { de_bobina: 1030, largura: 290, carreta_graneleira: 184, carreta_bau: 216, truck_aberto: 124, gf_fgs: 80 },
+    },
+  } },
+  "50": { variants: {
+    "SDR 11": {
+      "100": { de_bobina: 1600, largura: 260, carreta_graneleira: 76, carreta_bau: 88, truck_aberto: 48, gf_fgs: 36 },
+      "50": { de_bobina: 1400, largura: 260, carreta_graneleira: 96, carreta_bau: 108, truck_aberto: 64, gf_fgs: 50 },
+    },
+  } },
+  "63": { variants: {
+    "SDR 13.6 a SDR 6": {
+      "100": { de_bobina: 1920, largura: 285, carreta_graneleira: 48, carreta_bau: 56, truck_aberto: 32, gf_fgs: 24 },
+      "50": { de_bobina: 1700, largura: 285, carreta_graneleira: 63, carreta_bau: 72, truck_aberto: 40, gf_fgs: 30 },
+    },
+    "SDR 17": {
+      "100": { de_bobina: 1920, largura: 285, carreta_graneleira: 48, carreta_bau: 56, truck_aberto: 32, gf_fgs: 24 },
+      "50": { de_bobina: 1700, largura: 285, carreta_graneleira: 63, carreta_bau: 72, truck_aberto: 40, gf_fgs: 30 },
+    },
+  } },
+  "75": { variants: {
+    "SDR 13.6 a SDR 6": {
+      "100": { de_bobina: 2300, largura: 330, carreta_graneleira: null, carreta_bau: null, truck_aberto: 25, gf_fgs: 20, bobinadeira: 39 },
+      "50": { de_bobina: 2100, largura: 330, carreta_graneleira: null, carreta_bau: null, truck_aberto: 28, gf_fgs: 21, bobinadeira: 42 },
+    },
+    "SDR 17": {
+      "100": { de_bobina: 2300, largura: 330, carreta_graneleira: null, carreta_bau: null, truck_aberto: 25, gf_fgs: 20, bobinadeira: 39 },
+      "50": { de_bobina: 2200, largura: 330, carreta_graneleira: null, carreta_bau: null, truck_aberto: 25, gf_fgs: 20, bobinadeira: 39 },
+    },
+  } },
+  "90": { variants: {
+    "SDR 13.6 a SDR 6": {
+      "100": { de_bobina: 2500, largura: 400, carreta_graneleira: null, carreta_bau: null, truck_aberto: 19, gf_fgs: 14, bobinadeira: 28 },
+      "50": { de_bobina: 2200, largura: 400, carreta_graneleira: null, carreta_bau: null, truck_aberto: 21, gf_fgs: 16, bobinadeira: 32 },
+    },
+    "SDR 17": {
+      "100": { de_bobina: 2500, largura: 400, carreta_graneleira: null, carreta_bau: null, truck_aberto: 19, gf_fgs: 14, bobinadeira: 28 },
+      "50": { de_bobina: 2200, largura: 400, carreta_graneleira: null, carreta_bau: null, truck_aberto: 21, gf_fgs: 16, bobinadeira: 32 },
+    },
+  } },
+  "110": { variants: {
+    "SDR 13.6 a SDR 6": {
+      "100": { de_bobina: 3100, largura: 500, carreta_graneleira: null, carreta_bau: null, truck_aberto: 10, gf_fgs: 10, bobinadeira: 20 },
+      "50": { de_bobina: 2800, largura: 500, carreta_graneleira: null, carreta_bau: null, truck_aberto: 10, gf_fgs: 10, bobinadeira: 20 },
+    },
+    "SDR 17": {
+      "100": { de_bobina: 3180, largura: 500, carreta_graneleira: null, carreta_bau: null, truck_aberto: 10, gf_fgs: 10, bobinadeira: 16 },
+      "50": { de_bobina: 2800, largura: 500, carreta_graneleira: null, carreta_bau: null, truck_aberto: 10, gf_fgs: 10, bobinadeira: 20 },
+    },
+  } },
+  "125": { variants: {
+    "SDR 13.6 a SDR 6": {
+      "100": { de_bobina: 3300, largura: 560, carreta_graneleira: null, carreta_bau: null, truck_aberto: 8, gf_fgs: 4, bobinadeira: 12 },
+      "50": { de_bobina: 3000, largura: 560, carreta_graneleira: null, carreta_bau: null, truck_aberto: 8, gf_fgs: 8, bobinadeira: 12 },
+    },
+  } },
+};
+// Bobinadeira em TODAS as bobinas: onde o procedimento não traz capacidade (20–63 mm),
+// estima-se pela proporção do comprimento da carroceria (12 m ÷ 8 m do Truck Aberto = 1,5×),
+// arredondando para baixo. Nas linhas que têm valor oficial, essa regra nunca passa do valor real.
+Object.values(BOBINAS_DATA).forEach((d) => Object.values(d.variants).forEach((sv) => Object.values(sv).forEach((row) => {
+  if (row.bobinadeira == null && row.truck_aberto != null) { row.bobinadeira = Math.floor(row.truck_aberto * 1.5); row.bobinadeira_est = true; }
+})));
+// Ajustes definidos pela equipe: capacidade da Bobinadeira (carreta) independente de SDR e comprimento da bobina.
+const BOBINADEIRA_OVERRIDE = { "63": 50, "110": 20 };
+Object.entries(BOBINADEIRA_OVERRIDE).forEach(([diam, cap]) => {
+  Object.values(BOBINAS_DATA[diam].variants).forEach((sv) => Object.values(sv).forEach((row) => {
+    row.bobinadeira = cap; row.bobinadeira_est = false;
+  }));
+});
+const NOTE_SDR_GAP = "Capacidade de Carreta Baú não informada pelo procedimento para este diâmetro/SDR.";
+
+// --- 2) REAL DATA — BARRAS (bars/straight lengths), Tabela 8 + Anexo A ----
+// carreta_12m = barras de 12 m numa Carreta (12 m); truck_6m = barras de 6 m
+// num Caminhão Truck (6/7,8 m); carreta_6m = barras de 6 m numa Carreta.
+// null = não informado / não cabe segundo o procedimento.
+const BARRAS_VEHICLES = {
+  carreta_12m: { label: "Carreta", sub: "barra de 12 m", kind: "trailer" },
+  truck_6m: { label: "Caminhão Truck", sub: "barra de 6 m", kind: "truck" },
+  carreta_6m: { label: "Carreta", sub: "barra de 6 m", kind: "trailer" },
+};
+
+const BARRAS_DATA = [
+  // 63 mm: não consta no procedimento. Estimado pelo mesmo espaço de carga da barra de 75 mm
+  // (25 × 75 mm de altura = 1.875 mm; 30 × 75 mm de largura = 2.250 mm): 35 de largura × 29 de altura.
+  { key: "63", diam: "63", label: "63 mm (estimado)", est: true, obs: "Capacidade estimada — não consta no procedimento", barras_coluna: "35 Largura × 29 Altura (estimado)", altura_total: 1827, tipos: ["Carreta", "Truck"], carreta_12m: 1015, truck_6m: 1015, carreta_6m: null },
+  { key: "75", diam: "75", label: "75 mm", barras_coluna: "25 (a granel)", altura_total: 1875, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 750, truck_6m: 750, carreta_6m: null },
+  { key: "90", diam: "90", label: "90 mm", barras_coluna: "25 Largura × 25 Altura", altura_total: 2250, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 625, truck_6m: 625, carreta_6m: null },
+  { key: "110", diam: "110", label: "110 mm", barras_coluna: "20 Largura × 20 Altura", altura_total: 2200, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 400, truck_6m: 400, carreta_6m: null },
+  { key: "125", diam: "125", label: "125 mm", barras_coluna: "18 Largura × 18 Altura", altura_total: 2250, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 324, truck_6m: 324, carreta_6m: null },
+  { key: "140", diam: "140", label: "140 mm", barras_coluna: "16 Largura × 16 Altura", altura_total: 2240, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 256, truck_6m: 256, carreta_6m: 512 },
+  { key: "160", diam: "160", label: "160 mm", barras_coluna: "14 Largura × 13 Altura", altura_total: 2730, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 182, truck_6m: 182, carreta_6m: 364 },
+  { key: "180", diam: "180", label: "180 mm", barras_coluna: "13 Largura × 12 Altura", altura_total: 2760, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 156, truck_6m: 156, carreta_6m: 312 },
+  { key: "200", diam: "200", label: "200 mm", barras_coluna: "12 Largura × 11 Altura", altura_total: 2750, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 121, truck_6m: 121, carreta_6m: 242 },
+  { key: "225", diam: "225", label: "225 mm", barras_coluna: "10 Largura × 10 Altura", altura_total: 2750, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 100, truck_6m: 100, carreta_6m: 200 },
+  { key: "250", diam: "250", label: "250 mm", barras_coluna: "9 Largura × 9 Altura", altura_total: 2700, tipos: ["Carreta", "Truck", "Graneleiro"], carreta_12m: 81, truck_6m: 81, carreta_6m: 162 },
+  { key: "280", diam: "280", label: "280 mm", barras_coluna: "8 Largura × 8 Altura", altura_total: 2640, tipos: ["Carreta", "Truck"], carreta_12m: 64, truck_6m: 64, carreta_6m: 128 },
+  { key: "315", diam: "315", label: "315 mm", barras_coluna: "7 Largura × 7 Altura", altura_total: 2555, tipos: ["Carreta", "Truck"], carreta_12m: 49, truck_6m: 49, carreta_6m: 98 },
+  { key: "355", diam: "355", label: "355 mm", barras_coluna: "6 Largura × 7 Altura", altura_total: 2835, tipos: ["Carreta", "Truck"], carreta_12m: 42, truck_6m: 42, carreta_6m: 84 },
+  { key: "400", diam: "400", label: "400 mm", barras_coluna: "6 Largura × 6 Altura", altura_total: 2700, tipos: ["Carreta", "Truck"], carreta_12m: 36, truck_6m: 36, carreta_6m: 72 },
+  { key: "450", diam: "450", label: "450 mm", barras_coluna: "5 Largura × 5 Altura", altura_total: 2500, tipos: ["Carreta", "Truck"], carreta_12m: 25, truck_6m: 25, carreta_6m: 50 },
+  { key: "500", diam: "500", label: "500 mm", barras_coluna: "4 Largura × 5 Altura", altura_total: 2750, tipos: ["Carreta", "Truck"], carreta_12m: 20, truck_6m: 20, carreta_6m: 40 },
+  { key: "560", diam: "560", label: "560 mm", barras_coluna: "4 Largura × 4 Altura", altura_total: 2440, tipos: ["Carreta", "Truck"], carreta_12m: 16, truck_6m: 16, carreta_6m: 32 },
+  { key: "560_exc", diam: "560", label: "560 mm — com excesso lateral (2,80 m)", obs: "Com excesso lateral – 2,80 m", barras_coluna: "5 Largura × 4 Altura", altura_total: 2750, tipos: ["Carreta", "Truck"], carreta_12m: 20, truck_6m: null, carreta_6m: 40 },
+  { key: "630", diam: "630", label: "630 mm", barras_coluna: "3 Largura × 3 Altura × 2 Vãos", altura_total: 2720, tipos: ["Carreta", "Truck"], carreta_12m: 11, truck_6m: 11, carreta_6m: 22 },
+  { key: "630_exc", diam: "630", label: "630 mm — com excesso lateral", obs: "Com excesso lateral", barras_coluna: "4 Largura × 4 Altura", altura_total: 2720, tipos: ["Carreta", "Truck"], carreta_12m: 16, truck_6m: null, carreta_6m: 32 },
+  { key: "710", diam: "710", label: "710 mm", barras_coluna: "3 Largura × 3 Altura", altura_total: 2280, tipos: ["Carreta", "Truck"], carreta_12m: 9, truck_6m: 9, carreta_6m: 18 },
+  { key: "710_exc", diam: "710", label: "710 mm — com excesso lateral (2,84 m)", obs: "Com excesso lateral – 2,84 m", barras_coluna: "4 Largura × 3 Altura", altura_total: 2280, tipos: ["Carreta", "Truck"], carreta_12m: 12, truck_6m: null, carreta_6m: 24 },
+  { key: "730", diam: "730", label: "730 mm", barras_coluna: "3 Largura × 3 Altura", altura_total: 2340, tipos: ["Carreta", "Truck"], carreta_12m: 9, truck_6m: 9, carreta_6m: 18 },
+  { key: "800", diam: "800", label: "800 mm", barras_coluna: "3 Largura × 3 Altura", altura_total: 2550, tipos: ["Carreta", "Truck"], carreta_12m: 9, truck_6m: 9, carreta_6m: 18 },
+  { key: "900", diam: "900", label: "900 mm", barras_coluna: "2 Largura × 2 Altura × 1 Vão", altura_total: 2700, tipos: ["Carreta", "Truck"], carreta_12m: 5, truck_6m: 5, carreta_6m: 10 },
+  { key: "900_exc", diam: "900", label: "900 mm — com excesso lateral", obs: "Com excesso lateral", barras_coluna: "3 Largura × 3 Altura", altura_total: 2850, tipos: ["Carreta", "Truck"], carreta_12m: 9, truck_6m: null, carreta_6m: 18 },
+  { key: "1000", diam: "1000", label: "1000 mm", barras_coluna: "2 Largura × 2 Altura", altura_total: 2100, tipos: ["Carreta", "Truck"], carreta_12m: 4, truck_6m: 4, carreta_6m: 8 },
+  { key: "1000_exc", diam: "1000", label: "1000 mm — com excesso lateral", obs: "Com excesso lateral", barras_coluna: "3 Largura × 2 Altura", altura_total: 2100, tipos: ["Carreta", "Truck"], carreta_12m: 6, truck_6m: null, carreta_6m: 12 },
+  { key: "1000_vao", diam: "1000", label: "1000 mm — com vão", obs: "Com vão", barras_coluna: "2 Largura × 2 Altura × 1 Vão", altura_total: 2100, tipos: ["Carreta", "Truck"], carreta_12m: 5, truck_6m: 5, carreta_6m: 10 },
+  { key: "1200", diam: "1200", label: "1200 mm", barras_coluna: "2 Largura × 2 Altura", altura_total: 2500, tipos: ["Carreta", "Truck"], carreta_12m: 4, truck_6m: 4, carreta_6m: 8 },
+  { key: "1400", diam: "1400", label: "1400 mm", barras_coluna: "1 Largura × 1 Altura", altura_total: 1450, tipos: ["Carreta", "Truck"], carreta_12m: 1, truck_6m: 1, carreta_6m: 2 },
+  { key: "1400_exc", diam: "1400", label: "1400 mm — com excesso lateral", obs: "Com excesso lateral", barras_coluna: "2 Largura × 1 Altura", altura_total: 2900, tipos: ["Carreta", "Truck"], carreta_12m: 3, truck_6m: null, carreta_6m: 6 },
+  { key: "1400_caixa", diam: "1400", label: "1400 mm — com caixa de apoio", obs: "Com caixa de apoio", barras_coluna: "1 Largura + 1 Altura", altura_total: 2900, tipos: ["Carreta", "Truck"], carreta_12m: 2, truck_6m: null, carreta_6m: null },
+  { key: "1600", diam: "1600", label: "1600 mm", barras_coluna: "1 Largura × 1 Altura", altura_total: 1650, tipos: ["Carreta", "Truck"], carreta_12m: 1, truck_6m: 1, carreta_6m: 2 },
+];
+
+// --- 3) REAL DATA — reference-only tables (Tabela 7, Tabela 9) ------------
+const TABELA7 = {
+  titulo: "Tabela 7 — Bobinas padrão Gás Natural (CEG)",
+  diametro: "90 mm SDR 17", de_bobina: 2250, largura: 400,
+  nota: "As bobinas devem ser embrulhadas separadamente em plástico preto e fornecidas em racks de madeira com 5 bobinas cada.",
+  rows: [
+    { veiculo: "Truck 8,20 m", total: "3 racks = 15 bobinas" },
+    { veiculo: "Carreta convencional", total: "5 racks = 25 bobinas" },
+  ],
+};
+
+const TABELA9 = {
+  titulo: "Tabela 9 — Quantidades de tubos para Gás (32, 110, 125, 160, 180, 200 e 250 mm)",
+  rows: [
+    { diametro: "32 mm", metros: "1.980 m", barra: "barras de 6 m", composicao: "9 caixas por Truck", cliente: "Gás Natural (CEG)" },
+    { diametro: "110 mm", metros: "504 m", barra: "barras de 8 m", composicao: "4 caixas por Truck", cliente: "Gás Natural (CEG)" },
+    { diametro: "125 mm", metros: "300 m", barra: "barras de 12 m", composicao: "9 caixas por Carreta", cliente: "Bahigas" },
+    { diametro: "160 mm", metros: "280 m", barra: "barras de 8 m", composicao: "4 caixas por Truck", cliente: "Gás Natural (CEG)" },
+    { diametro: "160 mm", metros: "192 m", barra: "barras de 12 m", composicao: "9 caixas por Carreta", cliente: "MSGÁS" },
+    { diametro: "180 mm", metros: "144 m", barra: "barras de 12 m", composicao: "9 caixas por Carreta", cliente: "Comgás" },
+    { diametro: "200 mm", metros: "160 m", barra: "barras de 8 m", composicao: "4 caixas por Truck", cliente: "Gás Natural (CEG)" },
+    { diametro: "250 mm", metros: "72 m", barra: "barras de 12 m", composicao: "9 caixas por Carreta", cliente: "Comgás" },
+  ],
+};
+
+const VEHICLE_NOTES = [
+  "Carreta Convencional e Carreta Graneleira: 12,00 m de comprimento, 1,60 m de altura do chão e 2,40 m de largura.",
+  "Caminhão Trucado Convencional e Caminhão Trucado Graneleiro: 7,80 m de comprimento, 1,50 m de altura do chão e 2,40 m de largura.",
+];
+const LEGAL_LIMITS = { altura_max: "4,40 m", largura_max: "2,40 m", comprimento_max: "12,00 m", cintas_carreta: "10 cintas", cintas_caminhao: "8 cintas" };
+const GENERALIDADES = [
+  "Fretes CIF: a carga deve passar por análise crítica da área de transporte para o correto dimensionamento.",
+  "O cliente final deve ser sempre informado sobre os procedimentos de carga e transporte.",
+  "Frete EXW: o setor comercial deve questionar o cliente sobre a existência de algum procedimento próprio de carga e transporte.",
+  "Para cargas com excesso lateral acima de 3,20 m e/ou altura acima de 4,40 m, consultar o departamento de logística ou o órgão de trânsito competente.",
+];
+const TELESCOPAGEM = [
+  "Telescopar = introduzir uma barra de tubo dentro de outra de diâmetro maior. Aplicável somente em fretes por conta da GF FGS (frete CIF).",
+  "Consultar o cliente e verificar se ele aceita receber cargas de tubos telescopados.",
+  "A carga com tubos telescopados pode ser feita em carretas graneleiras ou convencionais, sempre limitada à altura da guarda.",
+  "A folga entre os tubos deve ser de, no mínimo, 20% em relação ao diâmetro interno do tubo camisa.",
+  "Em tubos com SDR alto, a telescopagem deve ser analisada e aprovada pela Supervisão de Logística.",
+  "O Supervisor da Expedição deve ser informado da carga telescopada assim que o pedido for inserido no sistema.",
+  "As cargas a serem telescopadas devem ser comunicadas ao setor de pátio com, no mínimo, 10 dias de antecedência do embarque.",
+];
+const SOURCE_LABEL = "P-GF-019 · Rev. 09 · Carregamento de Tubos de PEAD";
+
+// --- 4) i18n (UI chrome only — os dados do procedimento ficam em PT-BR) ---
+const TRANSLATIONS = {
+  pt: {
+    nav_calculator: "Calculadora", nav_loadings: "Carregamentos", nav_reference: "Referência",
+    app_badge: "TUBBY", app_title: "TUBBY — Carregamento de Tubos de PEAD",
+    app_tagline: "Carregamento de Tubos de PEAD, calculado na hora",
+    app_subtitle: "Bobinas e barras calculadas na hora",
+    mode_bobinas: "Bobinas", mode_barras: "Barras", mode_mista: "Carga mista",
+    vehicle_group_oficial: "Veículos do procedimento (dimensões oficiais)",
+    vehicle_group_pequenos: "Veículos pequenos (valores de referência — edite se necessário)",
+    vehicle_group_custom: "Meus veículos salvos", vehicle_group_new: "Outro",
+    vehicle_custom_option: "+ Veículo personalizado…",
+    vehicle_spec_note: "Ajuste as medidas se o veículo real for diferente.",
+    field_comprimento: "Comprimento útil (m)", field_largura: "Largura útil (m)",
+    field_altura: "Altura útil (m)", field_capacidade_kg: "Capacidade de carga (kg) — opcional",
+    item_comprimento: "Comprimento do item (mm)", item_largura: "Largura do item (mm)",
+    item_altura: "Altura do item (mm)", item_peso: "Peso unitário (kg) — opcional",
+    item_quantidade: "Quantidade", vehicle_name_placeholder: "Nome do veículo (ex: Fiorino da filial)",
+    save_vehicle: "💾 Salvar este veículo", vehicle_saved: "Veículo salvo!",
+    result_volume: "Ocupação por volume", result_weight: "Ocupação por peso",
+    result_volume_total: "Volume total do item", result_volume_vehicle: "Volume útil do veículo",
+    result_weight_total: "Peso total do item", no_weight_capacity: "Sem capacidade de peso informada",
+    step1_title_bobinas: "Escolha o tubo em bobina", step1_title_barras: "Escolha o tubo em barra",
+    diameter_label: "Diâmetro do tubo", sdr_label: "SDR", length_label: "Comprimento da bobina",
+    vehicle_label: "Tipo de veículo", select_diameter_first: "Selecione o diâmetro primeiro",
+    quantity_label_bobinas: "Metragem total do pedido", quantity_label_barras: "Metragem total do pedido",
+    meters_placeholder: "Ex: 2000 (em metros)", bar_length_label: "Comprimento da barra", bar_custom_placeholder: "Comprimento em metros (ex: 5,5)", bar_custom_option: "Personalizado", custom_length_unavailable: "Para comprimento personalizado, a capacidade por veículo não consta no procedimento — consulte a equipe técnica.", recommend_label: "Veículo recomendado", recommend_only_option: "Único veículo disponível para este comprimento de barra.", recommend_overflow: "Nenhum veículo comporta o pedido sozinho — o mais próximo é {v}, com {n} un. de sobra.",
+    quantity_placeholder: "Ex: 20",
+    result_title: "Preenchimento da carga", status_fits: "✓ CARGA POSSÍVEL",
+    status_exceeds: "✕ CARGA NÃO POSSÍVEL — excede em {n} unidade(s)",
+    requested_label: "Solicitado", capacity_label: "Capacidade máxima",
+    available_label: "Espaço disponível", spec_label: "Especificações do tubo",
+    not_informed: "Não informado no procedimento para esta combinação.",
+    footer_text: "Todos os valores vêm do procedimento operacional P-GF-019 (Carregamento de Tubos de PEAD), revisão 09. Roda inteiramente no seu navegador.",
+    err_negative: "A quantidade não pode ser negativa.",
+    loadings_title: "Carregamentos", loadings_subtitle: "Crie e gerencie carregamentos de embarque",
+    new_loading: "+ Novo Carregamento", no_loadings_yet: "Nenhum carregamento criado ainda.",
+    col_name: "Nome", col_client: "Cliente", col_created: "Criado em", col_actions: "Ações",
+    view: "Ver", edit: "Editar", delete: "Excluir",
+    confirm_delete: "Excluir este carregamento? Esta ação não pode ser desfeita.",
+    loading_form_title_new: "Novo Carregamento", loading_form_title_edit: "Editar Carregamento",
+    loading_name_label: "Nome do carregamento", loading_name_placeholder: "Ex: Carregamento VEOLIA",
+    client_label: "Cliente / transportadora (opcional)", client_placeholder: "Ex: Veolia Transporte",
+    truck_type_label: "Veículo previsto (opcional)", truck_type_none: "Não especificado",
+    notes_label: "Observações", notes_placeholder: "Alguma informação extra sobre este carregamento...",
+    section_pipes: "Tubos (bobinas e barras)", section_boxes: "Caixas", section_pallets: "Pallets",
+    pipe_col: "Tubo", quantity_col: "Quantidade", weight_col: "Peso (kg) — opcional",
+    description_col: "Descrição", length_col: "Comprimento (m)", width_col: "Largura (m)", height_col: "Altura (m)",
+    add_row: "+ Adicionar", remove_row: "Remover",
+    save_loading: "Salvar Carregamento", cancel: "Cancelar",
+    summary_title: "Resumo do Carregamento", summary_created: "Criado em", summary_updated: "Atualizado em",
+    summary_client: "Cliente / transportadora", summary_truck: "Veículo previsto", summary_notes: "Observações",
+    summary_total_weight: "Peso total informado", summary_total_items: "Total de itens",
+    summary_fits_yes: "✓ Cabe no veículo previsto", summary_fits_no: "⚠ Excede a capacidade do veículo previsto",
+    summary_fits_partial: "ℹ Verificado apenas para os itens do mesmo tipo (bobina/barra) do veículo previsto",
+    print_button: "🖨 Imprimir / Salvar como imagem", back_to_loadings: "← Voltar aos Carregamentos",
+    no_items_in_section: "Nenhum", name_required_error: "Informe um nome para o carregamento.",
+    reference_title: "Tabelas de Referência", reference_subtitle: "Demais dados do procedimento P-GF-019 que não entram diretamente na calculadora",
+    ref_general: "Regras gerais e limites legais", ref_general_lede: "Item 4.1 do procedimento e Resolução do Código Nacional de Trânsito (Lei 62.127/68, art. 81).",
+    ref_vehicles: "Dimensões dos veículos", ref_gas: "Bobinas padrão Gás Natural (CEG)", ref_gas9: "Quantidades de tubos para Gás",
+    ref_telescopagem: "Cargas de tubos telescopados (item 4.5)",
+    ref_straps: "Cintas obrigatórias", ref_source: "Fonte dos dados",
+  },
+};
+function getLang() { return "pt"; }
+function t(key, params) {
+  let text = TRANSLATIONS.pt[key] || key;
+  if (params) Object.keys(params).forEach((k) => { text = text.replace("{" + k + "}", params[k]); });
+  return text;
+}
+
+// --- 5) SVG vehicle icons ---------------------------------------------------
+// --- Logo / marca (identidade visual TUBBY — wordmark minimalista, conceito C) ---
+function logoMark(size) {
+  const s = size || 40;
+  return logoWordmark(false, s * 0.62);
+}
+function logoWordmark(onDark, height) {
+  const h = height || 30;
+  const textColor = onDark ? "#FFFFFF" : "currentColor";
+  return `<svg viewBox="0 0 168 46" xmlns="http://www.w3.org/2000/svg" style="height:${h}px;width:auto;display:block;">
+    <text x="0" y="34" font-family="Inter, Arial, sans-serif" font-weight="900" font-size="30" letter-spacing="-1" fill="${textColor}">tub<tspan fill="#9CC0E0">by</tspan></text>
+    <circle cx="150" cy="9" r="3.6" fill="#9CC0E0"/>
+    <path d="M2 41 h24" stroke="#9CC0E0" stroke-width="2.6" stroke-linecap="round"/>
+  </svg>`;
+}
+function svgTruck() {
+  return `
+  <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="70" width="190" height="42" rx="4" fill="none" stroke="#9CC0E0" stroke-width="4"/>
+    <circle cx="35" cy="118" r="4" fill="#9CC0E0"/><circle cx="60" cy="118" r="4" fill="#9CC0E0"/>
+    <circle cx="95" cy="118" r="4" fill="#9CC0E0"/><circle cx="120" cy="118" r="4" fill="#9CC0E0"/>
+    <circle cx="155" cy="118" r="4" fill="#9CC0E0"/><circle cx="180" cy="118" r="4" fill="#9CC0E0"/>
+    <path d="M200 60 h55 l25 30 v22 h-80 z" fill="none" stroke="#245C94" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="215" y="70" width="26" height="18" rx="2" fill="#9CC0E0"/>
+    <circle cx="50" cy="125" r="16" fill="#245C94"/><circle cx="50" cy="125" r="6" fill="#9CC0E0"/>
+    <circle cx="160" cy="125" r="16" fill="#245C94"/><circle cx="160" cy="125" r="6" fill="#9CC0E0"/>
+    <circle cx="255" cy="125" r="16" fill="#245C94"/><circle cx="255" cy="125" r="6" fill="#9CC0E0"/>
+    <line x1="0" y1="141" x2="300" y2="141" stroke="#9CC0E0" stroke-width="3"/>
+  </svg>`;
+}
+function svgTrailer() {
+  return `
+  <svg viewBox="0 0 340 130" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="55" width="280" height="34" rx="4" fill="none" stroke="#9CC0E0" stroke-width="4"/>
+    <circle cx="55" cy="100" r="3.6" fill="#9CC0E0"/><circle cx="80" cy="100" r="3.6" fill="#9CC0E0"/>
+    <circle cx="105" cy="100" r="3.6" fill="#9CC0E0"/><circle cx="130" cy="100" r="3.6" fill="#9CC0E0"/>
+    <circle cx="155" cy="100" r="3.6" fill="#9CC0E0"/><circle cx="180" cy="100" r="3.6" fill="#9CC0E0"/>
+    <circle cx="205" cy="100" r="3.6" fill="#9CC0E0"/><circle cx="230" cy="100" r="3.6" fill="#9CC0E0"/>
+    <circle cx="255" cy="100" r="3.6" fill="#9CC0E0"/><circle cx="280" cy="100" r="3.6" fill="#9CC0E0"/>
+    <path d="M30 89 l-22 18" stroke="#245C94" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <circle cx="6" cy="112" r="8" fill="#245C94"/>
+    <circle cx="245" cy="107" r="14" fill="#245C94"/><circle cx="245" cy="107" r="5" fill="#9CC0E0"/>
+    <circle cx="280" cy="107" r="14" fill="#245C94"/><circle cx="280" cy="107" r="5" fill="#9CC0E0"/>
+    <line x1="0" y1="121" x2="320" y2="121" stroke="#9CC0E0" stroke-width="3"/>
+  </svg>`;
+}
+function svgVan() {
+  return `
+  <svg viewBox="0 0 260 140" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 55 h130 a10 10 0 0 1 10 10 v30 h-140 z" fill="none" stroke="#9CC0E0" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M160 65 h35 l20 22 v8 h-55 z" fill="none" stroke="#245C94" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="170" y="72" width="18" height="14" rx="2" fill="#9CC0E0"/>
+    <circle cx="35" cy="118" r="3.6" fill="#9CC0E0"/><circle cx="60" cy="118" r="3.6" fill="#9CC0E0"/>
+    <circle cx="85" cy="118" r="3.6" fill="#9CC0E0"/><circle cx="110" cy="118" r="3.6" fill="#9CC0E0"/>
+    <circle cx="135" cy="118" r="3.6" fill="#9CC0E0"/>
+    <circle cx="65" cy="103" r="14" fill="#245C94"/><circle cx="65" cy="103" r="5" fill="#9CC0E0"/>
+    <circle cx="195" cy="103" r="14" fill="#245C94"/><circle cx="195" cy="103" r="5" fill="#9CC0E0"/>
+    <line x1="0" y1="117" x2="240" y2="117" stroke="#9CC0E0" stroke-width="3"/>
+  </svg>`;
+}
+function vehicleIconFor(kind) {
+  if (kind === "truck") return svgTruck();
+  if (kind === "van") return svgVan();
+  return svgTrailer();
+}
+
+// --- 6) Calculation helpers -------------------------------------------------
+function calcOccupancy(requested, capacity) {
+  const occupancy = capacity > 0 ? Math.round((requested / capacity) * 1000) / 10 : 0;
+  return {
+    requested_quantity: requested, max_capacity: capacity, occupancy_percentage: occupancy,
+    fits: requested <= capacity, available_space: Math.max(capacity - requested, 0),
+    overflow: Math.max(requested - capacity, 0),
+  };
+}
+
+// --- 7) Storage (replaces SQLite) -----------------------------------------
+const STORAGE_KEY = "plm_loadings_v2";
+function loadAllLoadings() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+}
+function saveAllLoadings(list) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {
+    alert("Não foi possível salvar (armazenamento local indisponível).");
+  }
+}
+function nextId(list) { return list.reduce((max, l) => Math.max(max, l.id), 0) + 1; }
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString("pt-BR", { dateStyle: "medium", timeStyle: "short" });
+}
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
+}
+
+// --- 8) Pipe catalog for the Loading form (flat, searchable) --------------
+// Builds one flat list combining every bobina (diameter+SDR+length) and
+// every barra (diameter+variant) combo, each with a unique itemKey so a
+// saved Loading can look the row back up later.
+function buildPipeCatalog() {
+  const items = [];
+  Object.keys(BOBINAS_DATA).forEach((diam) => {
+    const variants = BOBINAS_DATA[diam].variants;
+    Object.keys(variants).forEach((sdr) => {
+      Object.keys(variants[sdr]).forEach((length) => {
+        const row = variants[sdr][length];
+        items.push({
+          itemKey: `bobina|${diam}|${sdr}|${length}`, kind: "bobina",
+          diam, sdr, length,
+          label: `Bobina ${diam} mm — ${sdr} — ${length} m`,
+          data: row,
+        });
+      });
+    });
+  });
+  BARRAS_DATA.forEach((row) => {
+    items.push({
+      itemKey: `barra|${row.key}`, kind: "barra", diam: row.diam, variantKey: row.key,
+      label: `Barra ${row.label}`, data: row,
+    });
+  });
+  return items;
+}
+const PIPE_CATALOG = buildPipeCatalog();
+const PIPE_CATALOG_BY_KEY = Object.fromEntries(PIPE_CATALOG.map((it) => [it.itemKey, it]));
+
+// intended-truck options for the Loading form (mirrors both vehicle sets)
+const TRUCK_OPTIONS = [
+  { key: "bobina|truck_aberto", kind: "bobina", vehicleKey: "truck_aberto", label: "Caminhão Truck Aberto (bobinas, 8 m)" },
+  { key: "bobina|bobinadeira", kind: "bobina", vehicleKey: "bobinadeira", label: "Bobinadeira (bobinas, 12 m)" },
+  { key: "barra|carreta_12m", kind: "barra", vehicleKey: "carreta_12m", label: "Carreta — barra de 12 m" },
+  { key: "barra|truck_6m", kind: "barra", vehicleKey: "truck_6m", label: "Caminhão Truck — barra de 6 m" },
+  { key: "barra|carreta_6m", kind: "barra", vehicleKey: "carreta_6m", label: "Carreta — barra de 6 m" },
+];
+const TRUCK_OPTIONS_BY_KEY = Object.fromEntries(TRUCK_OPTIONS.map((o) => [o.key, o]));
+
+function capacityFor(itemKey, vehicleKey) {
+  const item = PIPE_CATALOG_BY_KEY[itemKey];
+  if (!item) return null;
+  if (MIX_VEHICLES[vehicleKey]) vehicleKey = MIX_VEHICLES[vehicleKey][item.kind];
+  const v = item.data[vehicleKey];
+  return v == null ? null : v;
+}
+
+// --- 9) Router --------------------------------------------------------------
+const app = document.getElementById("app");
+function parseHash() { return location.hash.replace(/^#\/?/, "").split("/").filter(Boolean); }
+function navigate(path) { location.hash = path; }
+window.navigate = navigate;
+
+function router() {
+  const parts = parseHash();
+  const section = parts[0] || "calculator";
+  renderNav(section);
+  if (!parts.length || parts[0] === "calculator") renderCalculator();
+  else if (parts[0] === "reference") renderReference();
+  else renderCalculator();
+}
+window.addEventListener("hashchange", router);
+
+function renderNav(activeSection) {
+  const nav = document.getElementById("topnav");
+  nav.innerHTML = `
+    <div class="topnav-inner">
+      <a class="topnav-brand" onclick="navigate('calculator')">${logoWordmark(false, 22)}</a>
+      <div class="topnav-links">
+        <button class="topnav-link ${activeSection === "calculator" ? "active" : ""}" onclick="navigate('calculator')">${t("nav_calculator")}</button>
+        <button class="topnav-link ${activeSection === "reference" ? "active" : ""}" onclick="navigate('reference')">${t("nav_reference")}</button>
+      </div>
+    </div>
+  `;
+}
+
+// --- 10) Calculator page -----------------------------------------------------
+let CALC_MODE = "bobinas";
+
+function renderCalculator() {
+  document.title = t("app_title");
+  app.innerHTML = `
+    <header class="top-bar">
+      <div class="top-bar-content">
+        <div class="hero-logo">${logoWordmark(false, 40)}</div>
+        <h1>${t("app_tagline")}</h1>
+        <p class="top-sub">${t("app_subtitle")}</p>
+      </div>
+    </header>
+    <main class="container">
+      <section class="card">
+        <div class="segmented" id="mode-segmented">
+          <button type="button" data-mode="bobinas">${t("mode_bobinas")}</button>
+          <button type="button" data-mode="barras">${t("mode_barras")}</button>
+          <button type="button" data-mode="mista">${t("mode_mista")}</button>
+          <button type="button" data-mode="gas" class="seg-gas">Gás</button>
+        </div>
+      </section>
+      <div id="calc-body"></div>
+    </main>
+    <footer class="footer">${t("footer_text")}<br><strong>Desenvolvido por Guilherme Torres</strong></footer>
+  `;
+  app.querySelectorAll("#mode-segmented button").forEach((b) => {
+    b.classList.toggle("active", b.dataset.mode === CALC_MODE);
+    b.addEventListener("click", () => {
+      if (CALC_MODE === b.dataset.mode) return;
+      CALC_MODE = b.dataset.mode;
+      app.querySelectorAll("#mode-segmented button").forEach((x) => x.classList.toggle("active", x === b));
+      renderCalcBody();
+    });
+  });
+  renderCalcBody();
+}
+function renderCalcBody() {
+  document.body.classList.toggle("gas-mode", CALC_MODE === "gas");
+  if (CALC_MODE === "gas") return renderGasCalc();
+  if (CALC_MODE === "bobinas") renderBobinasCalc();
+  else if (CALC_MODE === "barras") renderBarrasCalc();
+  else renderMistaCalc();
+}
+// Contagem animada dos percentuais
+function tweenPct(el, to) {
+  cancelAnimationFrame(el._raf);
+  const from = parseFloat(el.dataset.v) || 0;
+  el.dataset.v = to;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to.toFixed(1) + "%"; return; }
+  const t0 = performance.now(), d = 550;
+  const step = (now) => {
+    const k = Math.min((now - t0) / d, 1), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = (from + (to - from) * e).toFixed(1) + "%";
+    if (k < 1) el._raf = requestAnimationFrame(step);
+  };
+  el._raf = requestAnimationFrame(step);
+}
+
+// Imagem por material (a imagem muda conforme o material, não conforme o veículo)
+function svgBobina() {
+  let discs = "";
+  for (let cx = 150; cx <= 200; cx += 10) {
+    discs += `<ellipse cx="${cx}" cy="75" rx="30" ry="62" fill="#9CC0E0" stroke="#245C94" stroke-width="2"/>`;
+  }
+  return `
+  <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="175" cy="142" rx="105" ry="5" fill="#9CC0E0" opacity=".55"/>
+    ${discs}
+    <ellipse cx="200" cy="75" rx="30" ry="62" fill="#9CC0E0" stroke="#245C94" stroke-width="4"/>
+    <ellipse cx="200" cy="75" rx="23" ry="47" fill="none" stroke="#245C94" stroke-width="3" opacity=".75"/>
+    <ellipse cx="200" cy="75" rx="16" ry="32" fill="none" stroke="#245C94" stroke-width="3" opacity=".75"/>
+    <ellipse cx="200" cy="75" rx="9" ry="17" fill="#E9F0F7" stroke="#245C94" stroke-width="3"/>
+  </svg>`;
+}
+function svgBarras() {
+  let c = "";
+  const rows = [4, 5, 4];
+  rows.forEach((n, r) => {
+    for (let i = 0; i < n; i++) {
+      const x = 160 + (i - (n - 1) / 2) * 34, y = 40 + r * 32;
+      c += `<circle cx="${x}" cy="${y}" r="14" fill="none" stroke="#245C94" stroke-width="5"/><circle cx="${x}" cy="${y}" r="7" fill="#9CC0E0"/>`;
+    }
+  });
+  return `
+  <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg">
+    ${c}
+    <line x1="70" y1="132" x2="250" y2="132" stroke="#9CC0E0" stroke-width="6" stroke-linecap="round"/>
+    <line x1="0" y1="145" x2="320" y2="145" stroke="#9CC0E0" stroke-width="3"/>
+  </svg>`;
+}
+// --- Resultado compartilhado (lógica de carga mista) ------------------------
+// Usado pelas abas Bobinas, Barras e Carga mista. `p` é o prefixo dos ids no DOM.
+function mistaResultCardHtml(p) {
+  return `
+    <section class="card card-result" id="${p}-result" hidden>
+      <h2 class="card-title">Veículos necessários</h2>
+      <div id="${p}-status" class="load-status"></div>
+      <div class="progress-wrap">
+        <div class="progress-track"><div id="${p}-fill" class="progress-fill"></div></div>
+        <span id="${p}-pct" class="percentage-text">0%</span>
+      </div>
+      <div id="${p}-table"></div>
+      <div id="${p}-vehicles" class="spec-note" style="margin:14px 0"></div>
+      <div class="result-grid">
+        <div class="result-item"><span class="result-label">Total de veículos</span><span id="${p}-total" class="result-value">–</span></div>
+        <div class="result-item"><span class="result-label">Aproveitamento médio</span><span id="${p}-free" class="result-value">–</span></div>
+      </div>
+      ${freteHtml(p)}
+      <button type="button" class="btn-link" data-no-capture style="margin-top:12px;width:100%" onclick="mistaSaveImage('${p}', this)">📷 Salvar imagem do resultado</button>
+    </section>`;
+}
+
+// --- Salvar imagem do resultado (sem bibliotecas: SVG foreignObject -> canvas -> PNG) ---
+async function mistaSaveImage(p, btn) {
+  const card = document.getElementById(`${p}-result`);
+  if (!card) return;
+  const label = btn.textContent;
+  btn.textContent = "Gerando imagem…"; btn.disabled = true;
+  try {
+    card.classList.add("capturing");
+    const rect = card.getBoundingClientRect();
+    const w = Math.ceil(rect.width), h = Math.ceil(Math.max(rect.height, card.scrollHeight));
+    const clone = card.cloneNode(true);
+    // copia os estilos calculados (inclui variáveis de tema) para o clone
+    const srcEls = [card, ...card.querySelectorAll("*")];
+    const dstEls = [clone, ...clone.querySelectorAll("*")];
+    srcEls.forEach((el, i) => {
+      const cs = getComputedStyle(el);
+      let css = "";
+      for (let k = 0; k < cs.length; k++) css += `${cs[k]}:${cs.getPropertyValue(cs[k])};`;
+      dstEls[i].setAttribute("style", css + "animation:none;transition:none;");
+    });
+    clone.querySelectorAll("[data-no-capture]").forEach((el) => el.remove());
+    card.classList.remove("capturing");
+    clone.removeAttribute("hidden"); clone.style.margin = "0"; clone.style.width = w + "px";
+    Object.assign(clone.style, { position: "static", maxHeight: "none", height: "auto", overflow: "visible", boxShadow: "none", transform: "none", opacity: "1" });
+    const bodyBg = getComputedStyle(document.body).backgroundColor;
+    const cardBg = getComputedStyle(card).backgroundColor;
+    clone.style.background = cardBg === "rgba(0, 0, 0, 0)" ? bodyBg : cardBg;
+    const xml = new XMLSerializer().serializeToString(clone);
+    const scale = 2;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w * scale}" height="${h * scale}" viewBox="0 0 ${w} ${h}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml">${xml}</div></foreignObject></svg>`;
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); });
+    const canvas = document.createElement("canvas");
+    canvas.width = w * scale; canvas.height = h * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = bodyBg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+    if (!blob) throw new Error("blob");
+    const file = new File([blob], "veiculos-necessarios.png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: "Veículos necessários" }); return; }
+      catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "veiculos-necessarios.png";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) {
+    alert("Não foi possível gerar a imagem. Use a captura de tela do aparelho.");
+  } finally {
+    card.classList.remove("capturing");
+    btn.textContent = label; btn.disabled = false;
+  }
+}
+
+// items: [{ item, meters, unitLen, units, caps:[cap por veículo da frota] }]
+// types: índices (dentro de f.vehicles) dos veículos permitidos
+function mistaShowResult(p, f, types, items) {
+  const $ = (s) => document.getElementById(`${p}-${s}`);
+  const plan = mistaPlan(items, types);
+  const elResult = $("result");
+  if (!plan) {
+    elResult.hidden = false;
+    $("status").textContent = "✕ Não há veículo que comporte todos os tubos desta lista com a composição escolhida.";
+    $("status").className = "load-status exceeds";
+    $("table").innerHTML = ""; $("vehicles").innerHTML = "";
+    cancelAnimationFrame($("pct")._raf); cancelAnimationFrame($("free")._raf);
+    $("pct").dataset.v = 0; $("free").dataset.v = 0;
+    $("fill").style.width = "0%"; $("pct").textContent = "–";
+    $("total").textContent = "–"; $("free").textContent = "–";
+    return null;
+  }
+  // ícone do veículo
+  const hasTrailer = plan.vehicles.some((v) => vehicleMeta(f.vehicles[v.t]).kind !== "truck");
+  const icon = $("vicon");
+  if (icon) icon.innerHTML = vehicleIconFor(hasTrailer ? "trailer" : "truck");
+
+  const unitOf = (it, n) => (it.item.kind === "bobina" ? "bobina" : "barra") + (n === 1 ? "" : "s");
+  const combined = items.some((it) => it.item.kind === "bobina") && items.some((it) => it.item.kind === "barra");
+  const parts = plan.types.map((ti, k) => ({ vk: f.vehicles[ti], n: plan.counts[k] })).filter((x) => x.n > 0);
+  const headline = parts.map((x) => `${x.n} ${vehicleNoun(x.vk, x.n)}`).join(" + ");
+  const st = $("status");
+  st.innerHTML = `✓ ${headline} <span style="font-weight:500;font-size:.8em;opacity:.85">(${plan.total} ${plan.total === 1 ? "veículo" : "veículos"})</span>`;
+  st.className = "load-status ok";
+
+  const pct = plan.avgFill * 100;
+  const fill = $("fill");
+  fill.style.width = Math.min(pct, 100) + "%"; fill.classList.remove("overflow");
+  tweenPct($("pct"), pct);
+  $("total").textContent = plan.total;
+  tweenPct($("free"), pct);
+
+  const idxCount = {};
+  let estUsed = false, barEstUsed = false; const lowFill = [];
+  let totKg = 0, totWood = 0, maxKg = 0, wOk = true;
+  const vehicleRows = plan.vehicles.map((v) => {
+    const vk = f.vehicles[v.t];
+    idxCount[vk] = (idxCount[vk] || 0) + 1;
+    const name = `${vehicleShort(vk)} ${idxCount[vk]}`;
+    let vkg = 0, vwood = 0, vok = true;
+    if (v.fill < MISTA_MIN_FILL - 1e-9) lowFill.push(`${name} (${(v.fill * 100).toFixed(0)}%)`);
+    const lines = v.contents.map((c) => {
+      const it = items[c.idx];
+      if (it.kgm) { vkg += c.n * it.unitLen * it.kgm; vwood += c.n * (it.woodKg || 0); } else vok = false;
+      const realVk = MIX_VEHICLES[vk] ? MIX_VEHICLES[vk][it.item.kind] : vk;
+      const barEst = it.item.kind === "barra" && it.item.data && it.item.data.est;
+      if (barEst) barEstUsed = true;
+      const est = (realVk === "bobinadeira" && it.item.data && it.item.data.bobinadeira_est) || barEst;
+      if (est && !barEst) estUsed = true;
+      return `${it.item.label}: ${c.n} ${unitOf(it, c.n)}${est ? " ⚠" : ""}`;
+    }).join("<br>");
+    if (vok) { totKg += vkg; totWood += vwood; maxKg = Math.max(maxKg, vkg + vwood); } else wOk = false;
+    const wLine = vok ? `<br><span style="font-size:12px;font-weight:600">Peso: ${fmtKg(vkg + vwood)}${vwood ? ` <span style="font-weight:400">(tubos ${fmtKg(vkg)} + madeira ${fmtKg(vwood)})</span>` : ""}</span>` : "";
+    return `<tr><td><strong>${name}</strong> <span style="font-size:11.5px;opacity:.75">· ${vehicleMeta(vk).label}</span><br><span style="font-size:12px">${lines}</span>${wLine}</td><td class="num">${(v.fill * 100).toFixed(0)}%</td></tr>`;
+  }).join("");
+  const orderRows = items.map((l) => `<tr><td>${l.item.label}<br><span style="font-size:11.5px;opacity:.75">${l.meters} m ÷ ${l.unitLen} m = ${l.units} ${unitOf(l, l.units)}</span></td><td class="num">${l.units}</td></tr>`).join("");
+  $("table").innerHTML =
+    `<table class="summary-table"><tbody><tr style="font-weight:700"><td>Pedido</td><td class="num">Unid.</td></tr>${orderRows}</tbody></table>
+     <table class="summary-table" style="margin-top:10px"><tbody><tr style="font-weight:700"><td>Distribuição por veículo</td><td class="num">Cheio</td></tr>${vehicleRows}</tbody></table>`;
+
+  let extra = `<div data-no-capture style="margin-bottom:12px"><div style="font-size:12px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;opacity:.8">Comparativo</div><ul style="margin:6px 0 0 18px;padding:0;font-size:13px">`;
+  extra += `<li>Esta composição: <strong>${headline}</strong></li>`;
+  if (f.vehicles.length > 1 && types.length > 1) {
+    f.vehicles.forEach((vk, i) => {
+      const alt = mistaPlan(items, [i]);
+      extra += `<li>Somente ${vehicleNoun(vk, 2)}: ${alt ? `<strong>${alt.total} ${vehicleNoun(vk, alt.total)}</strong>` : "não comporta todos os tubos"}</li>`;
+    });
+  }
+  extra += `</ul>`;
+  if (lowFill.length) extra += `<div style="margin-top:8px;font-size:13px">⚠ Pouca carga em: ${lowFill.join(", ")}.</div>`;
+  if (estUsed) extra += `<div style="margin-top:6px;font-size:12px">⚠ Capacidade da Bobinadeira estimada.</div>`;
+  if (barEstUsed) extra += `<div style="margin-top:6px;font-size:12px">⚠ Barra 63 mm: capacidade estimada (não consta no procedimento), pelo mesmo espaço de carga da barra de 75 mm: 1.015 barras por carreta (12 m) ou truck (6 m). Confirme com a Logística.</div>`;
+  if (combined) extra += `<div style="margin-top:6px;font-size:12px">⚠ Bobinas e barras no mesmo veículo: cada tubo ocupa a parte da capacidade que o procedimento dá para ele, somando no máximo 100%. O procedimento não tem regra de carga combinada; confirme a arrumação com a Logística.</div>`;
+  extra += `</div>`;
+  extra += `<div style="font-size:12px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;opacity:.8">Peso da carga</div>`;
+  if (wOk) {
+    extra += `<ul style="margin:6px 0 0 18px;padding:0;font-size:13px"><li>Total: <strong>${fmtKg(totKg + totWood)}</strong>${totWood ? ` (tubos ${fmtKg(totKg)} + madeira ${fmtKg(totWood)})` : ""}</li>${plan.total > 1 ? `<li>Veículo mais pesado: <strong>${fmtKg(maxKg)}</strong></li>` : ""}</ul>`;
+    if (totWood) extra += `<div data-no-capture style="margin-top:6px;font-size:12px">Madeira de apoio: valor aproximado.</div>`;
+  } else extra += `<div style="margin-top:6px;font-size:13px">Peso indisponível: não há peso na tabela para o SDR de um dos tubos.</div>`;
+  $("vehicles").innerHTML = extra;
+  $("result")._frete = { vehicles: plan.vehicles.map((v) => vehicleMeta(f.vehicles[v.t]).kind === "truck" ? "truck" : "trailer"), kg: wOk ? totKg + totWood : null };
+  freteUpdate(p);
+  elResult.hidden = false;
+  return plan;
+}
+
+// Preenche o seletor de composição (misturar / somente X) para uma frota e um registro de capacidades.
+function mistaFillModes(elMode, f, caps) {
+  const prev = elMode.value;
+  let html = "";
+  if (f.vehicles.length > 1) {
+    const ok = caps.every((c) => c != null);
+    html += `<option value="mix"${ok ? "" : " disabled"}>Misturar carretas e trucks (menos carregamentos)${ok ? "" : " — não consta no procedimento"}</option>`;
+  }
+  f.vehicles.forEach((vk, i) => {
+    const blocked = caps[i] == null;
+    html += `<option value="${i}"${blocked ? " disabled" : ""}>${f.vehicles.length > 1 ? "Somente " : ""}${vehicleMeta(vk).label} (${vehicleMeta(vk).sub})${blocked ? " — não consta no procedimento" : ""}</option>`;
+  });
+  elMode.innerHTML = html;
+  const opts = [...elMode.options];
+  const pick = opts.find((o) => o.value === prev && !o.disabled) || opts.find((o) => !o.disabled);
+  if (pick) elMode.value = pick.value;
+}
+function mistaModeTypes(elMode, f) {
+  return elMode.value === "mix" ? f.vehicles.map((_, i) => i) : [parseInt(elMode.value, 10)];
+}
+
+// --- Peso dos tubos (kg/m) por SDR e diâmetro externo — tabela de dimensões ---
+const PIPE_KGM = {
+  "41": {315:7.777,355:9.894,400:12.545,450:16.088,500:20.029,560:24.939,630:31.552,710:40.152,800:50.914,900:64.218,1000:79.515,1200:114.465,1400:155.765,1600:203.414,1800:255.521,2000:316.259},
+  "33": {315:9.806,355:12.543,400:15.762,450:20.31,500:25.017,560:31.444,630:39.807,710:50.618,800:64.137,900:81.107,1000:100.215,1200:144.131,1400:196.006,1600:255.838,1800:317.555,2000:392.242},
+  "26": {50:0.369,63:0.506,75:0.693,90:1.006,110:1.508,125:1.937,140:2.401,160:3.149,180:3.972,200:4.863,225:6.174,250:7.642,280:9.523,315:12.12,355:15.304,400:19.393,450:25.058,500:30.879,560:38.667,630:48.949,710:62.168,800:78.68,900:99.709,1000:122.936,1200:177.027,1400:240.751,1600:314.484,1800:397.005,2000:490.582},
+  "21": {40:0.253,50:0.383,63:0.595,75:0.852,90:1.221,110:1.834,125:2.343,140:2.934,160:3.849,180:4.836,200:5.993,225:7.572,250:9.268,280:11.699,315:14.806,355:18.666,400:23.802,450:30.622,500:37.781,560:47.284,630:59.732,710:76.054,800:96.401,900:121.975,1000:150.697,1200:216.901,1400:298.672,1600:389.823,1800:487.133,2000:601.367},
+  "17": {32:0.2,40:0.302,50:0.466,63:0.743,75:1.048,90:1.507,110:2.242,125:2.894,140:3.591,160:4.687,180:5.928,200:7.316,225:9.278,250:11.44,280:14.286,315:18.091,355:23.024,400:29.209,450:37.506,500:46.341,560:58.053,630:73.528,710:93.296,800:118.524,900:149.898,1000:184.951,1200:257.929,1400:364.248,1600:475.195,1800:594.355,2000:733.432},
+  "13.6": {25:0.153,32:0.238,40:0.366,50:0.566,63:0.902,75:1.277,90:1.831,110:2.74,125:3.527,140:4.413,160:5.755,180:7.298,200:8.999,225:11.352,250:14.044,280:17.579,315:22.258,355:28.194,400:35.836,450:46.131,500:56.945,560:71.303,630:90.233,710:114.537,800:145.501,900:183.161,1000:223.083,1200:325.297,1400:447.083,1600:583.708},
+  "11": {20:0.167,25:0.205,32:0.287,40:0.443,50:0.688,63:1.087,75:1.537,90:2.2,110:3.263,125:4.233,140:5.311,160:6.925,180:8.754,200:10.795,225:13.663,250:16.868,280:21.138,315:26.748,355:33.941,400:43.081,450:55.481,500:68.455,560:85.87,630:108.598,710:137.994,800:175.001,900:221.515,1000:272.961},
+  "9": {20:0.137,25:0.205,32:0.337,40:0.525,50:0.815,63:1.28,75:1.83,90:2.607,110:3.921,125:5.028,140:6.321,160:8.236,180:10.405,200:12.899,225:16.251,250:20.08,280:25.249,315:31.838,355:40.503,400:51.405,450:66.075,500:83.166,560:104.34,630:132.035,710:167.812,800:212.924,1200:382.698},
+  "7.4": {20:0.167,25:0.261,32:0.427,40:0.662,50:1.018,63:1.539,75:2.189,90:3.153,110:4.689,125:6.058,140:7.603,160:9.905,180:12.531,200:15.443,225:19.58,250:24.124,280:30.289,315:38.308,355:48.608,400:62.798,450:79.017},
+  "6": {20:0.188,25:0.291,32:0.477,40:0.738,50:1.145,63:1.819,75:2.576,90:3.712,110:5.529,125:7.311,140:8.952,160:11.673,180:14.755,200:18.219,225:23.072,250:28.447,280:35.691,315:45.164,355:57.374},
+};
+const SDR_ORDER = ["41", "33", "26", "21", "17", "13.6", "11", "9", "7.4", "6"]; // do mais fino ao mais espesso
+// SDRs com peso disponível para um rótulo ("SDR 11", "SDR 13.6 a SDR 6") e diâmetro; sem rótulo = todos.
+function weightSdrs(diam, label) {
+  let list = SDR_ORDER;
+  const nums = label ? (label.match(/[\d.]+/g) || []).map((n) => n === "7" ? "7.4" : n) : [];
+  if (nums.length === 1) list = [nums[0]];
+  else if (nums.length > 1) list = SDR_ORDER.slice(SDR_ORDER.indexOf(nums[0]), SDR_ORDER.indexOf(nums[nums.length - 1]) + 1);
+  return list.filter((k) => PIPE_KGM[k] && PIPE_KGM[k][parseInt(diam, 10)] != null);
+}
+const kgmFor = (diam, sdr) => (PIPE_KGM[sdr] || {})[parseInt(diam, 10)] || null;
+// Madeira de apoio das barras: valor aproximado já definido por faixa de diâmetro (kg por barra de 6 m).
+// Barras de outro comprimento são proporcionais (12 m = o dobro). Ajuste aqui se a prática for diferente.
+const WOOD_TABLE = [[90, 1], [160, 1.5], [250, 2.5], [355, 3.5], [450, 4.5], [Infinity, 15]]; // [diâmetro máximo (mm), kg por barra de 6 m]
+const woodPerBar = (diam, barLen) => Math.round(WOOD_TABLE.find(([max]) => parseInt(diam, 10) <= max)[1] * barLen / 6 * 10) / 10;
+const sdrOptionsHtml = (list, pick) => list.map((k) => `<option value="${k}"${k === pick ? " selected" : ""}>SDR ${k}</option>`).join("");
+const defaultSdr = (list) => list.includes("17") ? "17" : list[0];
+
+// --- Frete aproximado ----------------------------------------------------------
+// Frete = valor de mercado (Índice de Frete Rodoviário Edenred/Repom, média nacional ago/2026: R$ 8,72/km),
+// nunca abaixo do piso mínimo ANTT (Lei 13.703/2018; Tabela A carga geral lotação, Portaria SUROC nº 22/2026).
+// Piso por veículo = distância × CCD + CC (origem → destino; retorno vazio só é obrigatório para contêiner/frota dedicada).
+// Pedágio: fora do piso e do frete; pago antecipado pelo embarcador como vale-pedágio (Lei 10.209/2001, arts. 1º e 2º;
+// Res. ANTT 5.867/2020, art. 3º). Estimado por eixo × km conforme a região da rota; editável.
+const FRETE_IFR = 8.72;
+const FRETE_MARGEM = 5000; // margem de segurança fixa por embarque (R$), somada ao total
+const FRETE_ANTT = { truck: { eixos: 3, ccd: 5.2177, cc: 541.86 }, trailer: { eixos: 5, ccd: 6.8284, cc: 657.56 } };
+// mercado por km: carreta = média IFR; truck proporcional ao custo por km do piso (5,2177 / 6,8284)
+const FRETE_MERCADO = { truck: FRETE_IFR * FRETE_ANTT.truck.ccd / FRETE_ANTT.trailer.ccd, trailer: FRETE_IFR };
+// pedágio médio por eixo por km rodado, por região — estimativa conservadora (acima da Via Dutra, ≈ R$ 0,11/eixo/km)
+const FRETE_PEDAGIO = { SE: 0.14, S: 0.10, CO: 0.07, NE: 0.04, N: 0.03 };
+// bases de saída (endereços das unidades; coordenadas aproximadas da rua/bairro)
+const FRETE_ORIGENS = {
+  cajamar: { nome: "Cajamar-SP", end: "Av. Luiz Alli Fayrdin, 750 · Vila União · Cajamar-SP · 07776-235", lat: -23.3412, lon: -46.8426, reg: "SE" },
+  recife: { nome: "Cabo de Santo Agostinho-PE", end: "Rua Interna, 07 645 · Galpão A · Garapu · Cabo de Santo Agostinho-PE · 54589-635", lat: -8.3041, lon: -35.0267, reg: "NE" },
+};
+const FRETE_DESTINOS = [
+  ["Aracaju-SE", -10.947, -37.073, "NE"], ["Belém-PA", -1.456, -48.49, "N"], ["Belo Horizonte-MG", -19.917, -43.935, "SE"], ["Boa Vista-RR", 2.82, -60.672, "N"],
+  ["Brasília-DF", -15.794, -47.882, "CO"], ["Campo Grande-MS", -20.469, -54.62, "CO"], ["Cuiabá-MT", -15.601, -56.098, "CO"], ["Curitiba-PR", -25.429, -49.271, "S"],
+  ["Florianópolis-SC", -27.595, -48.548, "S"], ["Fortaleza-CE", -3.732, -38.527, "NE"], ["Goiânia-GO", -16.686, -49.265, "CO"], ["João Pessoa-PB", -7.115, -34.863, "NE"],
+  ["Macapá-AP", 0.035, -51.07, "N"], ["Maceió-AL", -9.666, -35.735, "NE"], ["Manaus-AM", -3.119, -60.022, "N"], ["Natal-RN", -5.795, -35.209, "NE"],
+  ["Palmas-TO", -10.184, -48.333, "N"], ["Porto Alegre-RS", -30.035, -51.218, "S"], ["Porto Velho-RO", -8.761, -63.904, "N"], ["Recife-PE", -8.048, -34.877, "NE"],
+  ["Rio Branco-AC", -9.975, -67.81, "N"], ["Rio de Janeiro-RJ", -22.907, -43.173, "SE"], ["Salvador-BA", -12.971, -38.511, "NE"], ["São Luís-MA", -2.53, -44.303, "NE"],
+  ["São Paulo-SP", -23.551, -46.633, "SE"], ["Teresina-PI", -5.089, -42.802, "NE"], ["Vitória-ES", -20.315, -40.312, "SE"],
+];
+const FRETE = { origem: "cajamar", destino: "", km: "", cep: "", cepDest: null, cepMsg: "", kmFonte: "" };
+// CEP do cliente → cidade/UF e coordenadas. A API oficial dos Correios exige contrato e token (não cabe num site aberto);
+// usamos a BrasilAPI (que consulta a base dos Correios e outras) e o ViaCEP como reserva; coordenadas pela BrasilAPI ou AwesomeAPI.
+const UF_REG = { SP: "SE", RJ: "SE", MG: "SE", ES: "SE", PR: "S", SC: "S", RS: "S", DF: "CO", GO: "CO", MT: "CO", MS: "CO", BA: "NE", SE: "NE", AL: "NE", PE: "NE", PB: "NE", RN: "NE", CE: "NE", PI: "NE", MA: "NE", AM: "N", PA: "N", AP: "N", RR: "N", RO: "N", AC: "N", TO: "N" };
+const fmtCep = (c) => c.slice(0, 5) + "-" + c.slice(5);
+async function cepJson(url) {
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 7000);
+  try { const r = await fetch(url, { signal: ctl.signal }); if (!r.ok) throw new Error(r.status); return await r.json(); } finally { clearTimeout(tm); }
+}
+async function cepBuscar(cep) {
+  let city = "", uf = "", rua = "", lat = NaN, lon = NaN;
+  try {
+    const j = await cepJson(`https://brasilapi.com.br/api/cep/v2/${cep}`);
+    city = j.city || ""; uf = j.state || ""; rua = j.street || "";
+    const c = j.location && j.location.coordinates;
+    if (c) { lat = parseFloat(c.latitude); lon = parseFloat(c.longitude); }
+  } catch (e) {
+    const j = await cepJson(`https://viacep.com.br/ws/${cep}/json/`);
+    if (j.erro) throw new Error("nao_encontrado");
+    city = j.localidade || ""; uf = j.uf || ""; rua = j.logradouro || "";
+  }
+  if (!city || !uf) throw new Error("nao_encontrado");
+  if (!(Math.abs(lat) > 0 && Math.abs(lon) > 0)) {
+    try { const a = await cepJson(`https://cep.awesomeapi.com.br/json/${cep}`); lat = parseFloat(a.lat); lon = parseFloat(a.lng); } catch (e) { /* sem coordenadas */ }
+  }
+  if (!(Math.abs(lat) > 0 && Math.abs(lon) > 0) && rua) {
+    try {
+      const q = new URLSearchParams({ format: "json", limit: "1", countrycodes: "br", street: rua, city, state: uf, country: "Brasil" });
+      const n = await cepJson(`https://nominatim.openstreetmap.org/search?${q}`);
+      if (n && n[0]) { lat = parseFloat(n[0].lat); lon = parseFloat(n[0].lon); }
+    } catch (e) { /* sem coordenadas */ }
+  }
+  let exato = Math.abs(lat) > 0 && Math.abs(lon) > 0;
+  if (!exato) {
+    // sem coordenada: se for a cidade de uma das bases, usa a própria base; senão, a capital do estado
+    const norm = (x) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const base = Object.values(FRETE_ORIGENS).find((o) => norm(o.nome) === norm(`${city}-${uf}`));
+    const cap = FRETE_DESTINOS.find((d) => d[0].endsWith("-" + uf));
+    if (base) { lat = base.lat; lon = base.lon; } else if (cap) { lat = cap[1]; lon = cap[2]; }
+  }
+  return { nome: `${city}-${uf}`, uf, rua, lat, lon, exato };
+}
+async function freteCep(p, raw) {
+  const cep = String(raw).replace(/\D/g, "");
+  FRETE.cep = raw;
+  const box = document.getElementById(`${p}-frete`);
+  const say = (m, cls) => { FRETE.cepMsg = m; const el = box && box.querySelector(".frete-cep-msg"); if (el) { el.textContent = m; el.className = "frete-cep-msg" + (cls ? " " + cls : ""); } };
+  if (cep.length !== 8) { say(cep.length ? "Digite os 8 números do CEP." : ""); return; }
+  say("Buscando CEP…");
+  try {
+    const r = await cepBuscar(cep);
+    if (!(Math.abs(r.lat) > 0)) throw new Error("sem_coord");
+    FRETE.cepDest = [`${r.nome} (CEP ${fmtCep(cep)})`, r.lat, r.lon, UF_REG[r.uf] || "SE", r.exato];
+    FRETE.destino = "cep";
+    const b = document.getElementById(`${p}-frete`); if (!b) return;
+    const d = b.querySelector(".frete-destino");
+    let opt = d.querySelector('option[value="cep"]');
+    if (!opt) { opt = document.createElement("option"); opt.value = "cep"; d.insertBefore(opt, d.options[1] || null); }
+    opt.textContent = FRETE.cepDest[0]; d.value = "cep";
+    say(`${r.rua ? r.rua + " · " : ""}${r.nome}` + (r.exato ? "" : " · sem coordenada exata do CEP; distância aproximada, confira os km"), r.exato ? "ok" : "warn");
+    freteUpdate(p, "sel");
+  } catch (e) {
+    FRETE.cepDest = null; if (FRETE.destino === "cep") FRETE.destino = "";
+    const b = document.getElementById(`${p}-frete`);
+    if (b) { const d = b.querySelector(".frete-destino"), o = d.querySelector('option[value="cep"]'); if (o) { if (d.value === "cep") { d.value = ""; b.querySelector(".frete-km").value = ""; FRETE.km = ""; } o.remove(); } freteUpdate(p, "sel"); }
+    say(e.message === "nao_encontrado" ? "CEP não encontrado. Escolha a cidade na lista." : "Não foi possível consultar o CEP agora. Escolha a cidade na lista.", "warn");
+  }
+}
+// distância rodoviária aproximada: linha reta × 1,30 (desvio das estradas, arredondado para cima; mínimo 1 km); editável
+function freteKm(o, d) {
+  const R = 6371, r = Math.PI / 180, a = FRETE_ORIGENS[o], [, lat, lon] = d;
+  const h = Math.sin((lat - a.lat) * r / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(lat * r) * Math.sin((lon - a.lon) * r / 2) ** 2;
+  const km = 2 * R * Math.asin(Math.sqrt(h)) * 1.30;
+  return km < 50 ? Math.max(1, Math.ceil(km)) : Math.ceil(km / 10) * 10; // curtas: km inteiro; longas: arredonda p/ cima de 10 em 10
+}
+// pedágio estimado por eixo para a rota (média das tarifas regionais da origem e do destino)
+function fretePedEixo(o, regDest, km) {
+  const rate = (FRETE_PEDAGIO[FRETE_ORIGENS[o].reg] + FRETE_PEDAGIO[regDest || FRETE_ORIGENS[o].reg]) / 2;
+  return Math.round(km * rate);
+}
+// distância real pela estrada (OSRM, rotas do OpenStreetMap). Guarda em cache por par de pontos.
+const ROTA_CACHE = {};
+async function freteRotaKm(o, dest) {
+  const a = FRETE_ORIGENS[o], key = `${a.lat},${a.lon}>${dest[1]},${dest[2]}`;
+  if (ROTA_CACHE[key]) return ROTA_CACHE[key];
+  const j = await cepJson(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${dest[2]},${dest[1]}?overview=false`);
+  if (!j || j.code !== "Ok" || !j.routes || !j.routes[0]) throw new Error("sem_rota");
+  const km = Math.max(1, Math.round(j.routes[0].distance / 1000));
+  ROTA_CACHE[key] = km; return km;
+}
+async function freteRota(p, o, dest) {
+  const tok = (FRETE._rotaTok = (FRETE._rotaTok || 0) + 1);
+  FRETE.kmFonte = "buscando";
+  try {
+    const km = await freteRotaKm(o, dest);
+    if (tok !== FRETE._rotaTok) return;
+    const b = document.getElementById(`${p}-frete`); if (!b) return;
+    b.querySelector(".frete-km").value = km; FRETE.km = String(km); FRETE.kmFonte = "rota";
+  } catch (e) { if (tok === FRETE._rotaTok) FRETE.kmFonte = "estimada"; }
+  if (tok === FRETE._rotaTok) freteUpdate(p, "rota");
+}
+const brl = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+function freteHtml(p) {
+  return `<div class="frete" id="${p}-frete" data-p="${p}">
+    <div class="frete-title">Frete aproximado</div>
+    <div class="frete-grid" data-no-capture>
+      <div><label class="mini-label">Saindo de</label><select class="frete-origem">${Object.entries(FRETE_ORIGENS).map(([k, o]) => `<option value="${k}" title="${o.end}"${k === FRETE.origem ? " selected" : ""}>${k === "recife" ? "Recife (Cabo-PE)" : o.nome}</option>`).join("")}</select></div>
+      <div><label class="mini-label">CEP do cliente</label><input type="text" class="frete-cep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="${FRETE.cep}"></div>
+      <div><label class="mini-label">Destino</label><select class="frete-destino"><option value="">Escolha a cidade</option>${FRETE.cepDest ? `<option value="cep"${FRETE.destino === "cep" ? " selected" : ""}>${FRETE.cepDest[0]}</option>` : ""}${FRETE_DESTINOS.map((d) => `<option${d[0] === FRETE.destino ? " selected" : ""}>${d[0]}</option>`).join("")}<option value="outro"${FRETE.destino === "outro" ? " selected" : ""}>Outro (digite os km)</option></select></div>
+      <div><label class="mini-label">Distância (km)</label><input type="number" class="frete-km" min="1" step="1" inputmode="numeric" value="${FRETE.km}"></div>
+    </div>
+    <p class="frete-cep-msg" data-no-capture>${FRETE.cepMsg}</p>
+    <div class="frete-out"></div>
+  </div>`;
+}
+function freteUpdate(p, changed) {
+  const box = document.getElementById(`${p}-frete`), card = document.getElementById(`${p}-result`);
+  if (!box || !card) return;
+  const o = box.querySelector(".frete-origem"), d = box.querySelector(".frete-destino"), k = box.querySelector(".frete-km");
+  FRETE.origem = o.value; FRETE.destino = d.value;
+  const dest = d.value === "cep" ? FRETE.cepDest : FRETE_DESTINOS.find((x) => x[0] === d.value);
+  if (dest && changed !== "km" && changed !== "rota") {
+    const key = `${FRETE_ORIGENS[o.value].lat},${FRETE_ORIGENS[o.value].lon}>${dest[1]},${dest[2]}`;
+    if (ROTA_CACHE[key]) { k.value = ROTA_CACHE[key]; FRETE.kmFonte = "rota"; }
+    else { k.value = freteKm(o.value, dest); freteRota(p, o.value, dest); }
+  }
+  if (changed === "km") FRETE.kmFonte = "manual";
+  if (!dest && changed !== "km" && changed !== "rota" && FRETE.kmFonte !== "manual") FRETE.kmFonte = "";
+  FRETE.km = k.value;
+  const out = box.querySelector(".frete-out"), data = card._frete, km = parseFloat(k.value);
+  if (!data || !(km > 0)) { out.innerHTML = `<p class="frete-hint">Digite o CEP do cliente ou escolha a cidade para ver o valor aproximado do frete.</p>`; return; }
+  const pedEixo = fretePedEixo(o.value, dest && dest[3], km);
+  const groups = {};
+  data.vehicles.forEach((kind) => { groups[kind] = (groups[kind] || 0) + 1; });
+  let frete = 0, ped = 0, usouPiso = false;
+  const lines = Object.entries(groups).map(([kind, n]) => {
+    const t = FRETE_ANTT[kind] || FRETE_ANTT.trailer, mkm = FRETE_MERCADO[kind] || FRETE_MERCADO.trailer;
+    const piso = km * t.ccd + t.cc, mercado = km * mkm, each = Math.max(piso, mercado), pv = pedEixo * t.eixos;
+    if (piso > mercado) usouPiso = true;
+    frete += each * n; ped += pv * n;
+    return `<li>${n} ${kind === "truck" ? (n === 1 ? "truck" : "trucks") : (n === 1 ? "carreta" : "carretas")} (${t.eixos} eixos) × ${brl(each)} de frete${piso > mercado ? " (piso ANTT)" : ""} + ${brl(pv)} de pedágio</li>`;
+  }).join("");
+  const total = frete + ped + FRETE_MARGEM;
+  const fonte = FRETE.kmFonte === "rota" && dest && dest[4] === false ? "pela estrada até um ponto aproximado; confira" : { rota: "pela estrada", buscando: "calculando rota…", estimada: "estimada (rota indisponível)", manual: "informada" }[FRETE.kmFonte] || "";
+  const rota = `${FRETE_ORIGENS[o.value].nome} → ${dest ? dest[0] : "destino informado"} · ${fmtNum(km)} km${fonte ? ` <span class="frete-fonte${FRETE.kmFonte === "rota" && !(dest && dest[4] === false) ? " ok" : ""}">${fonte}</span>` : ""}`;
+  out.innerHTML = `<div class="frete-total">${brl(total)}</div>
+    <div class="frete-rota">${rota}</div>
+    <div class="frete-orig">Saída: ${FRETE_ORIGENS[o.value].end}</div>
+    <div class="frete-split"><span>Frete <b>${brl(frete)}</b></span><span>Vale-pedágio <b>${brl(ped)}</b></span><span>Margem de segurança <b>${brl(FRETE_MARGEM)}</b></span>${data.kg ? `<span>Por tonelada <b>${brl(total / (data.kg / 1000))}</b></span>` : ""}</div>
+    <ul class="frete-list">${lines}</ul>
+    <p class="frete-note">Frete pela média de mercado (Índice de Frete Rodoviário Edenred Repom, ago/2026: R$ ${String(FRETE_IFR).replace(".", ",")}/km para carreta), nunca abaixo do piso mínimo da ANTT (Lei 13.703/2018, Portaria SUROC 22/2026)${usouPiso ? "; nesta rota o piso é maior que a média de mercado" : ""}. Pedágio é pago à parte pelo embarcador como vale-pedágio e não entra no frete (Lei 10.209/2001). Total inclui margem de segurança de ${brl(FRETE_MARGEM)}. Distância pela estrada (rotas OpenStreetMap/OSRM) quando disponível; pedágio estimado por cima. Só ida, sem ICMS e seguro da carga.</p>`;
+}
+document.addEventListener("change", (e) => { const b = e.target.closest(".frete"); if (b) freteUpdate(b.dataset.p, e.target.classList.contains("frete-km") ? "km" : "sel"); });
+document.addEventListener("input", (e) => {
+  const b = e.target.closest(".frete"); if (!b) return;
+  if (e.target.classList.contains("frete-cep")) { const v = e.target.value.replace(/\D/g, "").slice(0, 8); e.target.value = v.length > 5 ? fmtCep(v.padEnd(8, " ")).trim() : v; clearTimeout(b._cepT); b._cepT = setTimeout(() => freteCep(b.dataset.p, e.target.value), 350); return; }
+  if (e.target.classList.contains("frete-km")) { const d = b.querySelector(".frete-destino"); if (d.value && d.value !== "outro") d.value = "outro"; freteUpdate(b.dataset.p, "km"); }
+});
+
+// --- Aba Gás -----------------------------------------------------------------
+// Tubos para gás: somente SDR 17 (DE 50–630) e SDR 11 (DE 20–630), parede mínima de 3,0 mm.
+// [espessura e (mm), peso (kg/m)] por diâmetro externo — tabela de dimensões (colunas "Gás").
+const GAS_SDR = {
+  "SDR 17": { 50:[3,0.466],63:[3.8,0.743],75:[4.5,1.048],90:[5.4,1.507],110:[6.6,2.242],125:[7.4,2.894],140:[8.3,3.591],160:[9.5,4.687],180:[10.7,5.928],200:[11.9,7.316],225:[13.4,9.278],250:[14.8,11.44],280:[16.6,14.286],315:[18.7,18.091],355:[21.1,23.024],400:[23.7,29.209],450:[26.7,37.506],500:[29.7,46.341],560:[33.2,58.053],630:[37.4,73.528] },
+  "SDR 11": { 20:[3,0.167],25:[3,0.205],32:[3,0.287],40:[3.7,0.443],50:[4.6,0.688],63:[5.8,1.087],75:[6.8,1.537],90:[8.2,2.2],110:[10,3.263],125:[11.4,4.233],140:[12.7,5.311],160:[14.6,6.925],180:[16.4,8.754],200:[18.2,10.795],225:[20.5,13.663],250:[22.7,16.868],280:[25.4,21.138],315:[28.6,26.748],355:[32.2,33.941],400:[36.4,43.081],450:[40.9,55.481],500:[45.5,68.455],560:[50.9,85.87],630:[57.3,108.598] },
+};
+const GAS_PN = { "SDR 17": "PE80 PN 2,4/5 · PE100 PN 4/6", "SDR 11": "PE80 PN 4/8 · PE100 PN 7/10" };
+// Cargas de gás que constam no procedimento: Tabela 7 (bobinas) e Tabela 9 (barras em caixas).
+const GAS_ITEMS = [
+  { key: "bob90", kind: "bobina", diam: 90, sdrs: ["SDR 17"], label: "Bobina 90 mm — Gás Natural (CEG)",
+    vehicles: [{ kind: "truck", label: "Truck 8,20 m", cap: 15, comp: "3 racks = 15 bobinas" }, { kind: "trailer", label: "Carreta convencional", cap: 25, comp: "5 racks = 25 bobinas" }],
+    note: `${TABELA7.titulo}. Ø externo da bobina: ${TABELA7.de_bobina} mm · Largura: ${TABELA7.largura} mm. ${TABELA7.nota}` },
+  ...TABELA9.rows.map((r, i) => {
+    const diam = parseInt(r.diametro, 10), barLen = parseInt(r.barra.replace(/\D/g, ""), 10), metros = parseInt(r.metros.replace(/\D/g, ""), 10);
+    const truck = /Truck/.test(r.composicao);
+    return { key: "bar" + i, kind: "barra", diam, barLen, sdrs: Object.keys(GAS_SDR).filter((k) => GAS_SDR[k][diam]),
+      label: `Barra ${diam} mm — ${barLen} m — ${r.cliente}`,
+      vehicles: [{ kind: truck ? "truck" : "trailer", label: truck ? "Truck" : "Carreta", cap: metros / barLen, comp: `${r.composicao} = ${r.metros}` }],
+      note: `${TABELA9.titulo.split(" (")[0]}. ${r.cliente}: ${r.metros} por veículo em ${r.barra} (${r.composicao}).` };
+  }),
+];
+const fmtNum = (n, d = 0) => n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtKg = (kg) => kg >= 1000 ? `${fmtNum(kg / 1000, 2)} t` : `${fmtNum(kg, kg < 100 ? 1 : 0)} kg`;
+
+function renderGasCalc() {
+  const body = document.getElementById("calc-body");
+  body.innerHTML = `
+    <section class="card">
+      <h2 class="card-title"><span class="number">1</span> Escolha o tubo para gás</h2>
+      <label class="field-label">Material (conforme procedimento)</label>
+      <select id="g-item" class="field-select">
+        <option value="">Selecione o material</option>
+        ${GAS_ITEMS.map((it) => `<option value="${it.key}">${it.label}</option>`).join("")}
+      </select>
+      <label class="field-label">SDR</label>
+      <select id="g-sdr" class="field-select" disabled><option value="">—</option></select>
+      <label class="field-label">Veículo</label>
+      <select id="g-veh" class="field-select" disabled><option value="">—</option></select>
+    </section>
+
+    <section class="card card-visual">
+      <div class="visual-pair"><div class="vehicle-icon-wrap" id="g-mat">${svgBarras()}</div><div class="vehicle-icon-wrap" id="g-vicon">${svgTrailer()}</div></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title"><span class="number">2</span> <span id="g-qlabel">Metragem total do pedido</span></h2>
+      <input type="number" id="g-qty" class="field-input" min="0" step="any" inputmode="decimal">
+      <div id="g-clen-wrap" hidden>
+        <label class="field-label" for="g-clen">Comprimento de cada bobina, em metros (opcional, para calcular o peso)</label>
+        <input type="number" id="g-clen" class="field-input" min="0" step="any" inputmode="decimal">
+      </div>
+      <p id="g-conv" class="conv-note" hidden></p>
+      <p id="g-error" class="error-message" hidden></p>
+      <div id="g-spec" class="spec-note" hidden></div>
+    </section>
+
+    ${mistaResultCardHtml("g")}
+  `;
+  const $ = (id) => document.getElementById("g-" + id);
+  const elItem = $("item"), elSdr = $("sdr"), elVeh = $("veh"), elQty = $("qty"), elCLen = $("clen");
+  const cur = () => GAS_ITEMS.find((it) => it.key === elItem.value);
+
+  elItem.addEventListener("change", () => {
+    const it = cur();
+    $("result").hidden = true; $("error").hidden = true; $("conv").hidden = true;
+    if (!it) { elSdr.innerHTML = elVeh.innerHTML = `<option value="">—</option>`; elSdr.disabled = elVeh.disabled = true; $("spec").hidden = true; return; }
+    elSdr.innerHTML = it.sdrs.map((k) => `<option value="${k}">${k}</option>`).join(""); elSdr.disabled = false;
+    elVeh.innerHTML = it.vehicles.map((v, i) => `<option value="${i}">${v.label}</option>`).join(""); elVeh.disabled = false;
+    const coil = it.kind === "bobina";
+    $("mat").innerHTML = coil ? svgBobina() : svgBarras();
+    $("qlabel").textContent = coil ? "Quantidade de bobinas" : "Metragem total do pedido";
+    $("clen-wrap").hidden = !coil;
+    elQty.step = coil ? "1" : "any";
+    sync();
+  });
+  [elSdr, elVeh].forEach((e) => e.addEventListener("change", sync));
+  [elQty, elCLen].forEach((e) => e.addEventListener("input", sync));
+
+  function sync() {
+    const it = cur(); if (!it) return;
+    const sdr = elSdr.value, veh = it.vehicles[parseInt(elVeh.value, 10) || 0], [e, kgm] = GAS_SDR[sdr][it.diam];
+    $("vicon").innerHTML = vehicleIconFor(veh.kind);
+    $("spec").hidden = false;
+    $("spec").innerHTML = `<span class="tag">${SOURCE_LABEL}</span>${it.note}<br><strong>Tubo para gás ${it.diam} mm · ${sdr}:</strong> espessura ${fmtNum(e, 1)} mm · peso ${fmtNum(kgm, 3)} kg/m · ${GAS_PN[sdr]}.`;
+    $("error").hidden = true;
+    const coil = it.kind === "bobina", qty = parseFloat(String(elQty.value).replace(",", "."));
+    if (elQty.value === "") { $("result").hidden = true; $("conv").hidden = true; return; }
+    if (!(qty > 0)) { $("error").textContent = t("err_negative"); $("error").hidden = false; $("result").hidden = true; $("conv").hidden = true; return; }
+    const unitLen = coil ? (parseFloat(String(elCLen.value).replace(",", ".")) || 0) : it.barLen;
+    const units = coil ? Math.ceil(qty - 1e-9) : Math.ceil(qty / it.barLen - 1e-9);
+    const unitName = (n) => (coil ? "bobina" : "barra") + (n === 1 ? "" : "s");
+    $("conv").hidden = coil;
+    if (!coil) $("conv").textContent = `${fmtNum(qty, qty % 1 ? 2 : 0)} m ÷ ${it.barLen} m = ${units} ${unitName(units)}` + (Math.abs(units * it.barLen - qty) > 1e-9 ? " (arredondado para cima)" : "");
+
+    const n = Math.ceil(units / veh.cap - 1e-9), avg = units / (n * veh.cap) * 100, last = units - (n - 1) * veh.cap;
+    const noun = (k) => veh.kind === "truck" ? (k === 1 ? "truck" : "trucks") : (k === 1 ? "carreta" : "carretas");
+    $("status").innerHTML = `✓ ${n} ${noun(n)} <span style="font-weight:500;font-size:.8em;opacity:.85">(${veh.label})</span>`;
+    $("status").className = "load-status ok";
+    $("fill").style.width = Math.min(avg, 100) + "%";
+    tweenPct($("pct"), avg); tweenPct($("free"), avg); $("total").textContent = n;
+    const wd = coil ? 0 : woodPerBar(it.diam, it.barLen);
+    const kgUnit = unitLen * kgm, wt = (k) => kgUnit ? ` · ${fmtKg(k * (kgUnit + wd))}` : "";
+    const rows = [];
+    if (n > 1) rows.push(`<tr><td><strong>${n - 1} × ${veh.label}</strong><br><span style="font-size:12px">${veh.cap} ${unitName(veh.cap)} cada${wt(veh.cap)}</span></td><td class="num">100%</td></tr>`);
+    rows.push(`<tr><td><strong>${n > 1 ? "Último veículo" : veh.label}</strong><br><span style="font-size:12px">${last} ${unitName(last)}${wt(last)}</span></td><td class="num">${(last / veh.cap * 100).toFixed(0)}%</td></tr>`);
+    $("table").innerHTML =
+      `<table class="summary-table"><tbody><tr style="font-weight:700"><td>Pedido</td><td class="num">Unid.</td></tr><tr><td>${it.label} · ${sdr}<br><span style="font-size:11.5px;opacity:.75">${veh.comp}</span></td><td class="num">${units}</td></tr></tbody></table>
+       <table class="summary-table" style="margin-top:10px"><tbody><tr style="font-weight:700"><td>Distribuição por veículo</td><td class="num">Cheio</td></tr>${rows.join("")}</tbody></table>`;
+    let w = `<div style="font-size:12px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;opacity:.8">Peso da carga</div>`;
+    if (kgUnit) w += `<ul style="margin:6px 0 0 18px;padding:0;font-size:13px"><li>Total do pedido: <strong>${fmtKg(units * (kgUnit + wd))}</strong>${wd ? ` (tubos ${fmtKg(units * kgUnit)} + madeira ${fmtKg(units * wd)})` : ` (${fmtNum(units * unitLen)} m × ${fmtNum(kgm, 3)} kg/m)`}</li><li>Veículo cheio: <strong>${fmtKg(veh.cap * (kgUnit + wd))}</strong></li></ul>${wd ? `<div data-no-capture style="margin-top:6px;font-size:12px">Madeira de apoio: valor aproximado (${fmtNum(wd, 1)} kg por barra).</div>` : ""}`;
+    else w += `<div style="margin-top:6px;font-size:13px">Informe o comprimento de cada bobina para calcular o peso (${fmtNum(kgm, 3)} kg/m).</div>`;
+    if (last / veh.cap < MISTA_MIN_FILL - 1e-9) w += `<div data-no-capture style="margin-top:8px;font-size:13px">⚠ Pouca carga no ${n > 1 ? "último veículo" : "veículo"} (${(last / veh.cap * 100).toFixed(0)}%).</div>`;
+    $("vehicles").innerHTML = w;
+    $("result")._frete = { vehicles: Array(n).fill(veh.kind === "truck" ? "truck" : "trailer"), kg: kgUnit ? units * (kgUnit + wd) : null };
+    freteUpdate("g");
+    $("result").hidden = false;
+  }
+}
+window.addEventListener("hashchange", () => setTimeout(() => { if (!document.getElementById("calc-body")) document.body.classList.remove("gas-mode"); }, 0));
+
+// --- Aba Bobinas (usa a lógica de carga mista) ------------------------------
+// --- Mais materiais na mesma aba (outras bobinas na aba Bobinas, outras barras na aba Barras) ---
+function extraRowsHtml(p, noun) {
+  return `<div class="extra-wrap"><div class="extra-title">Mais ${noun}s no mesmo pedido</div><div id="${p}-extra"></div>
+    <button type="button" class="btn-add-row" id="${p}-extra-add">+ Adicionar ${noun}</button></div>`;
+}
+function extraRowsInit(p, kind, getFleet, onChange) {
+  const box = document.getElementById(`${p}-extra`);
+  const optionsHtml = (sel) => {
+    const f = getFleet();
+    return `<option value="">Selecione</option>` + PIPE_CATALOG.filter((i) => i.kind === kind).map((i) => {
+      const ok = f && f.vehicles.some((vk) => capacityFor(i.itemKey, vk) != null);
+      return `<option value="${i.itemKey}"${ok ? "" : " disabled"}${i.itemKey === sel ? " selected" : ""}>${i.label}${ok ? "" : " — não consta no procedimento"}</option>`;
+    }).join("");
+  };
+  const fillSdr = (div) => {
+    const item = PIPE_CATALOG_BY_KEY[div.querySelector(".x-item").value], sel = div.querySelector(".x-sdr");
+    if (!item) { sel.innerHTML = `<option value="">—</option>`; return; }
+    const wl = weightSdrs(item.diam, item.kind === "bobina" ? item.sdr : null);
+    sel.innerHTML = wl.length ? sdrOptionsHtml(wl, wl.includes(sel.value) ? sel.value : (item.kind === "bobina" ? wl[0] : defaultSdr(wl))) : `<option value="">—</option>`;
+  };
+  document.getElementById(`${p}-extra-add`).addEventListener("click", () => {
+    const div = document.createElement("div");
+    div.className = "item-row pipes";
+    div.innerHTML = `<div><span class="mini-label">${kind === "bobina" ? "Bobina" : "Barra"}</span><select class="x-item">${optionsHtml("")}</select></div>
+      <div><span class="mini-label">Metros</span><input type="number" class="x-meters" min="0" step="any" inputmode="decimal"></div>
+      <div><span class="mini-label">SDR (peso)</span><select class="x-sdr"><option value="">—</option></select></div>
+      <button type="button" class="btn-remove-row">${t("remove_row")}</button>`;
+    div.querySelector(".x-item").addEventListener("change", () => { fillSdr(div); onChange(); });
+    div.querySelector(".x-sdr").addEventListener("change", onChange);
+    div.querySelector(".x-meters").addEventListener("input", onChange);
+    div.querySelector(".btn-remove-row").addEventListener("click", () => { div.remove(); onChange(); });
+    box.appendChild(div);
+  });
+  return {
+    refresh() { box.querySelectorAll(".x-item").forEach((sel) => { const v = sel.value; sel.innerHTML = optionsHtml(v); if (sel.selectedOptions[0] && sel.selectedOptions[0].disabled) sel.value = ""; fillSdr(sel.closest(".item-row")); }); },
+    items(f) {
+      const out = [];
+      box.querySelectorAll(".item-row").forEach((row) => {
+        const key = row.querySelector(".x-item").value, meters = parseFloat(String(row.querySelector(".x-meters").value).replace(",", "."));
+        const item = PIPE_CATALOG_BY_KEY[key];
+        if (!item || !(meters > 0)) return;
+        const unitLen = item.kind === "bobina" ? (parseFloat(item.length) || 100) : f.barLen;
+        out.push({ item, meters, unitLen, units: Math.ceil(meters / unitLen - 1e-9), caps: f.vehicles.map((vk) => capacityFor(key, vk)),
+          kgm: kgmFor(item.diam, row.querySelector(".x-sdr").value), woodKg: item.kind === "barra" ? woodPerBar(item.diam, unitLen) : 0 });
+      });
+      return out;
+    },
+  };
+}
+
+function renderBobinasCalc() {
+  const body = document.getElementById("calc-body");
+  const f = FLEETS.find((x) => x.key === "bobinas");
+  const diamOptions = Object.keys(BOBINAS_DATA).map((d) => `<option value="${d}">${d} mm</option>`).join("");
+  body.innerHTML = `
+    <section class="card">
+      <h2 class="card-title"><span class="number">1</span> ${t("step1_title_bobinas")}</h2>
+      <label class="field-label">${t("diameter_label")}</label>
+      <select id="b-diam" class="field-select">
+        <option value="">${t("select_diameter_first")}</option>
+        ${diamOptions}
+      </select>
+      <label class="field-label">${t("sdr_label")}</label>
+      <select id="b-sdr" class="field-select" disabled><option value="">—</option></select>
+      <label class="field-label">${t("length_label")}</label>
+      <select id="b-length" class="field-select" disabled><option value="">—</option></select>
+      <label class="field-label">Composição da frota</label>
+      <select id="b-mode" class="field-select" disabled><option value="">—</option></select>
+    </section>
+
+    <section class="card card-visual">
+      <div class="visual-pair"><div class="vehicle-icon-wrap">${svgBobina()}</div><div class="vehicle-icon-wrap" id="b-vicon">${svgTrailer()}</div></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title"><span class="number">2</span> ${t("quantity_label_bobinas")}</h2>
+      <input type="number" id="b-qty" class="field-input" min="0" step="any" inputmode="decimal">
+      <div id="b-wsdr-wrap" hidden><label class="field-label" for="b-wsdr">SDR do tubo (para o peso)</label><select id="b-wsdr" class="field-select"></select></div>
+      <p id="b-conv" class="conv-note" hidden></p>
+      <p id="b-error" class="error-message" hidden></p>
+      <div id="b-spec" class="spec-note" hidden></div>
+      ${extraRowsHtml("b", "bobina")}
+    </section>
+
+    ${mistaResultCardHtml("b")}
+  `;
+
+  const elDiam = document.getElementById("b-diam");
+  const elSdr = document.getElementById("b-sdr");
+  const elLength = document.getElementById("b-length");
+  const elMode = document.getElementById("b-mode");
+  const elQty = document.getElementById("b-qty");
+  const elError = document.getElementById("b-error");
+  const elSpec = document.getElementById("b-spec");
+  const elResult = document.getElementById("b-result");
+  const elConv = document.getElementById("b-conv");
+  const extra = extraRowsInit("b", "bobina", () => f, () => tryCalc());
+
+  elDiam.addEventListener("change", () => {
+    const diam = elDiam.value;
+    elSdr.innerHTML = ""; elLength.innerHTML = "";
+    elMode.innerHTML = `<option value="">—</option>`;
+    elSdr.disabled = elLength.disabled = elMode.disabled = true;
+    resetResult();
+    if (!diam) return;
+    Object.keys(BOBINAS_DATA[diam].variants).forEach((sv) => { elSdr.innerHTML += `<option value="${sv}">${sv}</option>`; });
+    elSdr.disabled = false;
+    fillLengthsAndModes();
+  });
+  const elWSdr = document.getElementById("b-wsdr");
+  elWSdr.addEventListener("change", tryCalc);
+  elSdr.addEventListener("change", () => { fillLengthsAndModes(); tryCalc(); });
+  elLength.addEventListener("change", () => { fillModes(); tryCalc(); });
+  elMode.addEventListener("change", tryCalc);
+  elQty.addEventListener("input", tryCalc);
+
+  function currentRow() {
+    const diam = elDiam.value, sdr = elSdr.value, len = elLength.value;
+    if (!diam || !sdr || !len) return null;
+    return BOBINAS_DATA[diam].variants[sdr][len] || null;
+  }
+  function fillLengthsAndModes() {
+    const diam = elDiam.value, sdr = elSdr.value;
+    elLength.innerHTML = "";
+    const wl = diam && sdr ? weightSdrs(diam, sdr) : [];
+    elWSdr.innerHTML = sdrOptionsHtml(wl, wl[0]);
+    document.getElementById("b-wsdr-wrap").hidden = wl.length < 2;
+    if (!diam || !sdr) { elLength.disabled = true; return; }
+    Object.keys(BOBINAS_DATA[diam].variants[sdr]).forEach((len) => { elLength.innerHTML += `<option value="${len}">${len} m</option>`; });
+    elLength.disabled = false;
+    fillModes();
+  }
+  function fillModes() {
+    const row = currentRow();
+    if (!row) { elMode.innerHTML = `<option value="">—</option>`; elMode.disabled = true; return; }
+    mistaFillModes(elMode, f, f.vehicles.map((vk) => row[vk] == null ? null : row[vk]));
+    elMode.disabled = false;
+    renderSpec(row, elDiam.value, elSdr.value, elLength.value);
+  }
+  function renderSpec(row, diam, sdr, len) {
+    elSpec.hidden = false;
+    const estNote = row.bobinadeira_est ? `<br><strong>Bobinadeira:</strong> capacidade estimada (${row.bobinadeira} bobinas) — proporcional à carroceria de 12 m; não consta no procedimento. Confirme com a equipe técnica.` : "";
+    elSpec.innerHTML = `<span class="tag">${SOURCE_LABEL}</span>Tubo ${diam} mm · ${sdr} · bobina de ${len} m — <strong>Ø externo da bobina:</strong> ${row.de_bobina} mm · <strong>Largura da bobina:</strong> ${row.largura} mm.`
+      + `<br><strong>Altura da bobina:</strong> ${row.de_bobina} mm.`
+      + estNote;
+  }
+  function resetResult() { elResult.hidden = true; elSpec.hidden = true; elError.hidden = true; elConv.hidden = true; }
+  function showError(msg) { elError.textContent = msg; elError.hidden = false; }
+
+  function tryCalc() {
+    elError.hidden = true;
+    const diam = elDiam.value, sdr = elSdr.value, len = elLength.value, qtyText = elQty.value;
+    const row = currentRow();
+    if (!row || !elMode.value || qtyText === "") { elResult.hidden = true; elConv.hidden = true; return; }
+    const meters = parseFloat(String(qtyText).replace(",", "."));
+    if (!(meters > 0)) { elConv.hidden = true; showError(t("err_negative")); elResult.hidden = true; return; }
+    const coilLen = parseFloat(len) || 100;
+    const units = Math.ceil(meters / coilLen - 1e-9);
+    elConv.hidden = false;
+    elConv.textContent = `${meters} m ÷ ${coilLen} m = ${units} bobina${units === 1 ? "" : "s"}` + (units * coilLen !== meters ? " (arredondado para cima)" : "");
+    const key = `bobina|${diam}|${sdr}|${len}`;
+    const item = PIPE_CATALOG_BY_KEY[key];
+    const caps = f.vehicles.map((vk) => capacityFor(key, vk));
+    const types = mistaModeTypes(elMode, f);
+    if (!item || !types.some((ti) => caps[ti] != null)) { showError(t("not_informed")); elResult.hidden = true; return; }
+    mistaShowResult("b", f, types, [{ item, meters, unitLen: coilLen, units, caps, kgm: kgmFor(diam, elWSdr.value) }, ...extra.items(f)]);
+  }
+}
+
+// --- Aba Barras (usa a lógica de carga mista) -------------------------------
+function renderBarrasCalc() {
+  const body = document.getElementById("calc-body");
+  const optionsHtml = BARRAS_DATA.map((r) => `<option value="${r.key}">${r.label}</option>`).join("");
+  body.innerHTML = `
+    <section class="card">
+      <h2 class="card-title"><span class="number">1</span> ${t("step1_title_barras")}</h2>
+      <label class="field-label">${t("diameter_label")}</label>
+      <select id="r-diam" class="field-select">
+        <option value="">${t("select_diameter_first")}</option>
+        ${optionsHtml}
+      </select>
+      <label class="field-label">${t("bar_length_label")}</label>
+      <select id="r-blen" class="field-select">
+        <option value="6">6 m</option><option value="12">12 m</option>
+      </select>
+      <label class="field-label">Composição da frota</label>
+      <select id="r-mode" class="field-select" disabled><option value="">—</option></select>
+    </section>
+
+    <section class="card card-visual">
+      <div class="visual-pair"><div class="vehicle-icon-wrap">${svgBarras()}</div><div class="vehicle-icon-wrap" id="r-vicon">${svgTrailer()}</div></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title"><span class="number">2</span> ${t("quantity_label_barras")}</h2>
+      <input type="number" id="r-qty" class="field-input" min="0" step="any" inputmode="decimal">
+      <div class="spec-grid" id="r-wgrid" hidden>
+        <div><label class="field-label" for="r-wsdr">SDR do tubo (para o peso)</label><select id="r-wsdr" class="field-select"></select></div>
+        <div><label class="field-label" for="r-wood">Madeira de apoio por barra (kg, aprox.)</label><input type="number" id="r-wood" class="field-input" min="0" step="0.1" inputmode="decimal"></div>
+      </div>
+      <p id="r-conv" class="conv-note" hidden></p>
+      <p id="r-error" class="error-message" hidden></p>
+      <div id="r-spec" class="spec-note" hidden></div>
+      ${extraRowsHtml("r", "barra")}
+    </section>
+
+    ${mistaResultCardHtml("r")}
+  `;
+
+  const elDiam = document.getElementById("r-diam");
+  const elBLen = document.getElementById("r-blen");
+  const elMode = document.getElementById("r-mode");
+  const elQty = document.getElementById("r-qty");
+  const elError = document.getElementById("r-error");
+  const elSpec = document.getElementById("r-spec");
+  const elResult = document.getElementById("r-result");
+  const elConv = document.getElementById("r-conv");
+  const currentRow = () => BARRAS_DATA.find((r) => r.key === elDiam.value);
+  const currentFleet = () => FLEETS.find((x) => x.kind === "barra" && x.barLen === parseInt(elBLen.value, 10));
+  const extra = extraRowsInit("r", "barra", currentFleet, () => tryCalc());
+  elBLen.addEventListener("change", () => extra.refresh());
+
+  elDiam.addEventListener("change", syncModes);
+  elBLen.addEventListener("change", syncModes);
+  elMode.addEventListener("change", tryCalc);
+  elQty.addEventListener("input", tryCalc);
+
+  const elWSdr = document.getElementById("r-wsdr"), elWood = document.getElementById("r-wood");
+  elWSdr.addEventListener("change", tryCalc);
+  elWood.addEventListener("input", tryCalc);
+  function syncModes() {
+    const row = currentRow(), f = currentFleet();
+    document.getElementById("r-wgrid").hidden = !row;
+    if (row) {
+      const wl = weightSdrs(row.diam), prev = elWSdr.value;
+      elWSdr.innerHTML = sdrOptionsHtml(wl, wl.includes(prev) ? prev : defaultSdr(wl));
+      elWood.value = woodPerBar(row.diam, f.barLen);
+    }
+    if (!row) { elMode.innerHTML = `<option value="">—</option>`; elMode.disabled = true; elResult.hidden = true; elSpec.hidden = true; return; }
+    mistaFillModes(elMode, f, f.vehicles.map((vk) => row[vk] == null ? null : row[vk]));
+    elMode.disabled = false;
+    elSpec.hidden = false;
+    elSpec.innerHTML = `<span class="tag">${SOURCE_LABEL}</span>Barras por coluna: <strong>${row.barras_coluna}</strong> · Altura total da carga: <strong>${row.altura_total} mm</strong> · Veículos recomendados: <strong>${row.tipos.join(", ")}</strong>${row.obs ? ` · <strong>${row.obs}</strong>` : ""}.`;
+    tryCalc();
+  }
+
+  function showError(msg) { elError.textContent = msg; elError.hidden = false; }
+  function tryCalc() {
+    elError.hidden = true;
+    const row = currentRow(), f = currentFleet(), qtyText = elQty.value;
+    if (!row || !elMode.value || qtyText === "") { elResult.hidden = true; elConv.hidden = true; return; }
+    const meters = parseFloat(String(qtyText).replace(",", "."));
+    const barLen = f.barLen;
+    if (!(meters > 0)) { elConv.hidden = true; showError(t("err_negative")); elResult.hidden = true; return; }
+    const units = Math.ceil(meters / barLen - 1e-9);
+    elConv.hidden = false;
+    elConv.textContent = `${meters} m ÷ ${barLen} m = ${units} barra${units === 1 ? "" : "s"}` + (Math.abs(units * barLen - meters) > 1e-9 ? " (arredondado para cima)" : "");
+    const key = `barra|${row.key}`;
+    const item = PIPE_CATALOG_BY_KEY[key];
+    const caps = f.vehicles.map((vk) => capacityFor(key, vk));
+    const types = mistaModeTypes(elMode, f);
+    if (!item || !types.some((ti) => caps[ti] != null)) { showError(t("not_informed")); elResult.hidden = true; return; }
+    mistaShowResult("r", f, types, [{ item, meters, unitLen: barLen, units, caps, kgm: kgmFor(row.diam, elWSdr.value), woodKg: Math.max(0, parseFloat(String(elWood.value).replace(",", ".")) || 0) }, ...extra.items(f)]);
+  }
+}
+
+// --- Carga mista: frota mista (carretas + trucks) ---------------------------
+// Cada "frota" é o conjunto de veículos que pode levar aquele material.
+// (bobina: Bobinadeira = carreta + Truck Aberto; barra de 12 m: só carreta;
+//  barra de 6 m: carreta + truck.)
+const FLEETS = [
+  { key: "bobinas", label: "Bobinas — Bobinadeira (carreta) + Truck Aberto", kind: "bobina", vehicles: ["bobinadeira", "truck_aberto"] },
+  { key: "barras12", label: "Barras de 12 m — Carreta", kind: "barra", barLen: 12, vehicles: ["carreta_12m"] },
+  { key: "barras6", label: "Barras de 6 m — Carreta + Truck", kind: "barra", barLen: 6, vehicles: ["carreta_6m", "truck_6m"] },
+];
+// Veículos para bobinas + barras no mesmo caminhão. Cada tubo ocupa a fração da capacidade que o
+// procedimento dá para ele naquele veículo (bobina: Bobinadeira/Truck Aberto; barra: Carreta/Truck),
+// e a soma das frações não passa de 100%. O procedimento não traz regra de carga combinada:
+// é uma estimativa a confirmar com a Logística.
+const MIX_VEHICLES = {
+  mix_carreta12: { label: "Carreta", sub: "bobinas + barras de 12 m", kind: "trailer", bobina: "bobinadeira", barra: "carreta_12m" },
+  mix_carreta6: { label: "Carreta", sub: "bobinas + barras de 6 m", kind: "trailer", bobina: "bobinadeira", barra: "carreta_6m" },
+  mix_truck6: { label: "Caminhão Truck", sub: "bobinas + barras de 6 m", kind: "truck", bobina: "truck_aberto", barra: "truck_6m" },
+};
+FLEETS.unshift(
+  { key: "mista12", label: "Bobinas + barras de 12 m — Carreta", kind: "mista", barLen: 12, vehicles: ["mix_carreta12"] },
+  { key: "mista6", label: "Bobinas + barras de 6 m — Carreta + Truck", kind: "mista", barLen: 6, vehicles: ["mix_carreta6", "mix_truck6"] },
+);
+const MISTA_MIN_FILL = 0.5; // cada veículo deve sair com pelo menos metade da carga preenchida
+function vehicleMeta(vk) { return BOBINAS_VEHICLES[vk] || BARRAS_VEHICLES[vk] || MIX_VEHICLES[vk]; }
+function vehicleNoun(vk, n) {
+  const m = vehicleMeta(vk);
+  const truck = m && m.kind === "truck";
+  return truck ? (n === 1 ? "truck" : "trucks") : (n === 1 ? "carreta" : "carretas");
+}
+function vehicleShort(vk) { const m = vehicleMeta(vk); return m && m.kind === "truck" ? "Truck" : "Carreta"; }
+
+// Distribui as unidades nos veículos, um por vez. Os tubos mais "eficientes" para o 1º tipo de
+// veículo vão primeiro nele; o resto vai para o 2º tipo. items: [{units, caps:[cap por tipo]}]
+function mistaAllocate(items, types, counts) {
+  const rem = items.map((i) => i.units);
+  const vehicles = [];
+  types.forEach((t, k) => {
+    const other = types.length === 2 ? types[1 - k] : null;
+    const ratio = (it) => { const x = it.caps[t], y = other == null ? 1 : it.caps[other]; return x == null ? -1 : (y == null ? 1e9 : x / y); };
+    const order = items.map((_, i) => i).sort((p, q) => ratio(items[q]) - ratio(items[p]));
+    for (let v = 0; v < counts[k]; v++) {
+      let remCap = 1; const contents = [];
+      for (const idx of order) {
+        if (rem[idx] <= 0) continue;
+        const cap = items[idx].caps[t];
+        if (cap == null || cap <= 0) continue;
+        const n = Math.min(rem[idx], Math.floor(remCap * cap + 1e-9));
+        if (n <= 0) continue;
+        contents.push({ idx, n }); rem[idx] -= n; remCap -= n / cap;
+      }
+      vehicles.push({ t, contents, fill: Math.max(0, 1 - remCap) });
+    }
+  });
+  return { vehicles, leftover: rem.reduce((a, b) => a + b, 0), counts: counts.slice(), types };
+}
+
+// Melhor combinação de veículos: menos veículos no total; depois, todos com ≥ 50% de carga;
+// depois, menos espaço desperdiçado.
+function mistaPlan(items, types) {
+  if (!items.length) return null;
+  if (!items.every((it) => types.some((t) => it.caps[t] != null))) return null;
+  if (types.length === 1) {
+    const t = types[0];
+    if (!items.every((it) => it.caps[t] != null)) return null;
+    let n = Math.max(1, Math.ceil(items.reduce((a, it) => a + it.units / it.caps[t], 0) - 1e-9));
+    let res = mistaAllocate(items, types, [n]);
+    while (res.leftover > 0 && n < 100000) { n++; res = mistaAllocate(items, types, [n]); }
+    return mistaFinish(items, mistaRebalance(items, res), [1]);
+  }
+  let sA = 0, sB = 0;
+  items.forEach((it) => { if (it.caps[types[0]] != null && it.caps[types[1]] != null) { sA += it.units / it.caps[types[0]]; sB += it.units / it.caps[types[1]]; } });
+  const sizes = [1, sB > 0 ? sA / sB : 0.5];
+  const TA = items.reduce((a, it) => a + (it.caps[types[0]] != null ? it.units / it.caps[types[0]] : 0), 0);
+  const TB = items.reduce((a, it) => a + (it.caps[types[1]] != null ? it.units / it.caps[types[1]] : 0), 0);
+  const maxA = Math.ceil(TA) + 1, maxB = Math.ceil(TB) + 2;
+  const cands = [];
+  for (let a = 0; a <= maxA; a++) {
+    if (mistaAllocate(items, types, [a, maxB]).leftover > 0) continue;
+    let lo = 0, hi = maxB;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (mistaAllocate(items, types, [a, mid]).leftover === 0) hi = mid; else lo = mid + 1; }
+    if (a + lo === 0) continue;
+    const res = mistaAllocate(items, types, [a, lo]);
+    if (res.vehicles.some((v) => v.fill < 0.001)) continue; // sem veículo vazio
+    cands.push(mistaFinish(items, mistaRebalance(items, res), sizes));
+  }
+  if (!cands.length) return null;
+  cands.sort((p, q) => (p.total - q.total) || ((q.mostlyFull ? 1 : 0) - (p.mostlyFull ? 1 : 0)) || (p.waste - q.waste));
+  return cands[0];
+}
+// Reequilibra a carga depois da distribuição gulosa: se um veículo sai abaixo de 50%, puxa itens de
+// veículos mais cheios, sem deixar o doador abaixo de 50%. Não muda o número de veículos.
+function mistaRebalance(items, res) {
+  const V = res.vehicles;
+  const cnt = V.map((v) => { const c = items.map(() => 0); v.contents.forEach(({ idx, n }) => { c[idx] += n; }); return c; });
+  const capOf = (k, i) => items[i].caps[V[k].t];
+  const frac = (k) => items.reduce((s, _, i) => s + (cnt[k][i] > 0 ? cnt[k][i] / capOf(k, i) : 0), 0);
+  for (let iter = 0; iter < 100; iter++) {
+    let moved = false;
+    const low = V.map((_, k) => k).filter((k) => frac(k) < MISTA_MIN_FILL - 1e-9).sort((p, q) => frac(p) - frac(q));
+    for (const l of low) {
+      const donors = V.map((_, k) => k).filter((k) => k !== l && frac(k) >= MISTA_MIN_FILL - 1e-9).sort((p, q) => frac(q) - frac(p));
+      for (const d of donors) {
+        for (let i = 0; i < items.length; i++) {
+          if (cnt[d][i] <= 0 || !(capOf(l, i) > 0)) continue;
+          const room = Math.floor((1 - frac(l)) * capOf(l, i) + 1e-9);
+          const spare = Math.floor((frac(d) - MISTA_MIN_FILL) * capOf(d, i) + 1e-9);
+          const m = Math.min(cnt[d][i], room, spare);
+          if (m <= 0) continue;
+          cnt[d][i] -= m; cnt[l][i] += m; moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+  return { ...res, vehicles: V.map((v, k) => ({ t: v.t, fill: Math.min(1, frac(k)), contents: items.map((_, i) => ({ idx: i, n: cnt[k][i] })).filter((c) => c.n > 0) })) };
+}
+function mistaFinish(items, res, sizes) {
+  const total = res.vehicles.length;
+  const waste = res.vehicles.reduce((a, v) => a + sizes[res.types.length === 1 ? 0 : res.types.indexOf(v.t)] * (1 - v.fill), 0);
+  const sz = (v) => sizes[res.types.length === 1 ? 0 : res.types.indexOf(v.t)];
+  const avgFill = res.vehicles.reduce((a, v) => a + v.fill * sz(v), 0) / res.vehicles.reduce((a, v) => a + sz(v), 0);
+  return { ...res, total, waste, avgFill, mostlyFull: res.vehicles.every((v) => v.fill >= MISTA_MIN_FILL - 1e-9), sizes };
+}
+
+function renderMistaCalc() {
+  const body = document.getElementById("calc-body");
+  const fleetOpts = FLEETS.map((f) => `<option value="${f.key}">${f.label}</option>`).join("");
+  body.innerHTML = `
+    <section class="card">
+      <h2 class="card-title"><span class="number">1</span> Material e frota</h2>
+      <label class="field-label">Material do pedido</label>
+      <select id="m-fleet" class="field-select">${fleetOpts}</select>
+      <div id="m-mode-wrap">
+        <label class="field-label">Composição da frota</label>
+        <select id="m-mode" class="field-select"></select>
+      </div>
+    </section>
+
+    <section class="card card-visual">
+      <div class="visual-pair"><div class="vehicle-icon-wrap" id="m-mat"></div><div class="vehicle-icon-wrap" id="m-vicon"></div></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title"><span class="number">2</span> Tubos do pedido</h2>
+      <div id="m-rows"></div>
+      <button type="button" class="btn-add-row" id="m-add">${t("add_row")} tubo</button>
+      <p id="m-error" class="error-message" hidden></p>
+    </section>
+
+    ${mistaResultCardHtml("m")}
+  `;
+
+  const elFleet = document.getElementById("m-fleet");
+  const elMode = document.getElementById("m-mode");
+  const elRows = document.getElementById("m-rows");
+  const elError = document.getElementById("m-error");
+  const elResult = document.getElementById("m-result");
+  let lastKind = null;
+
+  const currentFleet = () => FLEETS.find((f) => f.key === elFleet.value);
+  // índices (dentro de fleet.vehicles) dos veículos permitidos pela composição escolhida
+  const activeTypes = () => { const f = currentFleet(); return elMode.value === "mix" ? f.vehicles.map((_, i) => i) : [parseInt(elMode.value, 10)]; };
+
+  function fillModes() {
+    const f = currentFleet();
+    let html = f.vehicles.length > 1 ? `<option value="mix">Misturar carretas e trucks (menos carregamentos)</option>` : "";
+    f.vehicles.forEach((vk, i) => { html += `<option value="${f.vehicles.length > 1 ? i : "0"}">${f.vehicles.length > 1 ? "Somente " : ""}${vehicleMeta(vk).label} (${vehicleMeta(vk).sub})</option>`; });
+    elMode.innerHTML = html;
+    document.getElementById("m-mode-wrap").style.display = f.vehicles.length > 1 ? "" : "none";
+    if (f.vehicles.length === 1) elMode.value = "0";
+  }
+
+  function itemOptionsHtml(selected) {
+    const f = currentFleet(), types = activeTypes();
+    let html = `<option value="">Selecione o tubo</option>`;
+    PIPE_CATALOG.filter((i) => f.kind === "mista" || i.kind === f.kind).forEach((i) => {
+      const blocked = !types.some((ti) => capacityFor(i.itemKey, f.vehicles[ti]) != null);
+      html += `<option value="${i.itemKey}"${blocked ? " disabled" : ""}${i.itemKey === selected ? " selected" : ""}>${i.label}${blocked ? " — não consta no procedimento" : ""}</option>`;
+    });
+    return html;
+  }
+
+  function addRow(itemKey, meters) {
+    const div = document.createElement("div");
+    div.className = "item-row pipes";
+    div.innerHTML = `
+      <div><span class="mini-label">Tubo</span><select class="m-item">${itemOptionsHtml(itemKey)}</select></div>
+      <div><span class="mini-label">Metros</span><input type="number" class="m-meters" min="0" step="any" inputmode="decimal" value="${meters != null ? meters : ""}"></div>
+      <div><span class="mini-label">SDR (peso)</span><select class="m-sdr"><option value="">—</option></select></div>
+      <button type="button" class="btn-remove-row">${t("remove_row")}</button>
+    `;
+    div.querySelector(".m-item").addEventListener("change", () => { fillRowSdr(div); calc(); });
+    div.querySelector(".m-sdr").addEventListener("change", calc);
+    fillRowSdr(div);
+    div.querySelector(".m-meters").addEventListener("input", calc);
+    div.querySelector(".btn-remove-row").addEventListener("click", () => { div.remove(); calc(); });
+    elRows.appendChild(div);
+  }
+
+  function fillRowSdr(div) {
+    const item = PIPE_CATALOG_BY_KEY[div.querySelector(".m-item").value], sel = div.querySelector(".m-sdr");
+    if (!item) { sel.innerHTML = `<option value="">—</option>`; return; }
+    const wl = weightSdrs(item.diam, item.kind === "bobina" ? item.sdr : null);
+    sel.innerHTML = wl.length ? sdrOptionsHtml(wl, wl.includes(sel.value) ? sel.value : (item.kind === "bobina" ? wl[0] : defaultSdr(wl))) : `<option value="">—</option>`;
+  }
+  function refreshItemOptions() {
+    elRows.querySelectorAll(".m-item").forEach((sel) => {
+      const prev = sel.value;
+      sel.innerHTML = itemOptionsHtml(prev);
+      const chosen = sel.selectedOptions[0];
+      if (chosen && chosen.disabled) sel.value = "";
+      fillRowSdr(sel.closest(".item-row"));
+    });
+  }
+
+  function onFleetChange() {
+    const f = currentFleet();
+    fillModes();
+    document.getElementById("m-mat").innerHTML = f.kind === "barra" ? svgBarras() : svgBobina();
+    if (lastKind !== null && lastKind !== f.kind) { elRows.innerHTML = ""; addRow(); } else refreshItemOptions();
+    lastKind = f.kind;
+    calc();
+  }
+  function onModeChange() { refreshItemOptions(); calc(); }
+
+  function setVehicleIcon(plan, f) {
+    const hasTrailer = plan && plan.vehicles.some((v) => vehicleMeta(f.vehicles[v.t]).kind !== "truck");
+    const meta = vehicleMeta(f.vehicles[activeTypes()[0]]);
+    document.getElementById("m-vicon").innerHTML = vehicleIconFor(plan ? (hasTrailer ? "trailer" : "truck") : (meta ? meta.kind : "trailer"));
+  }
+
+  function calc() {
+    elError.hidden = true;
+    const f = currentFleet(), types = activeTypes();
+    const items = [];
+    let invalid = false;
+    elRows.querySelectorAll(".item-row").forEach((row) => {
+      const key = row.querySelector(".m-item").value;
+      const text = row.querySelector(".m-meters").value;
+      if (!key || text === "") return;
+      const meters = parseFloat(String(text).replace(",", "."));
+      if (!(meters > 0)) { invalid = true; return; }
+      const item = PIPE_CATALOG_BY_KEY[key];
+      if (!item) return;
+      const caps = f.vehicles.map((vk) => capacityFor(key, vk));
+      if (!types.some((ti) => caps[ti] != null)) return;
+      const unitLen = item.kind === "bobina" ? (parseFloat(item.length) || 100) : f.barLen;
+      items.push({ item, meters, unitLen, units: Math.ceil(meters / unitLen - 1e-9), caps, kgm: kgmFor(item.diam, row.querySelector(".m-sdr").value), woodKg: item.kind === "barra" ? woodPerBar(item.diam, unitLen) : 0 });
+    });
+    if (invalid) { elError.textContent = t("err_negative"); elError.hidden = false; elResult.hidden = true; return; }
+    if (!items.length) { elResult.hidden = true; return; }
+
+    mistaShowResult("m", f, types, items);
+  }
+
+  elFleet.addEventListener("change", onFleetChange);
+  elMode.addEventListener("change", onModeChange);
+  document.getElementById("m-add").addEventListener("click", () => addRow());
+  addRow();
+  onFleetChange();
+}
+
+// --- 11) Reference page -------------------------------------------------
+function renderReference() {
+  document.title = t("reference_title");
+  app.innerHTML = `
+    <div class="page-wrap">
+      <div class="page-header">
+        <div><h1>${t("reference_title")}</h1><p>${t("reference_subtitle")}</p></div>
+      </div>
+
+      <div class="ref-section card">
+        <h2>${t("ref_general")}</h2>
+        <p class="lede">${t("ref_general_lede")}</p>
+        <ul class="info-list">${GENERALIDADES.map((g) => `<li>${g}</li>`).join("")}</ul>
+        <div class="limits-grid">
+          <div class="limit-chip"><div class="v">${LEGAL_LIMITS.altura_max}</div><div class="l">Altura máxima</div></div>
+          <div class="limit-chip"><div class="v">${LEGAL_LIMITS.largura_max}</div><div class="l">Largura máxima</div></div>
+          <div class="limit-chip"><div class="v">${LEGAL_LIMITS.comprimento_max}</div><div class="l">Comprimento máximo</div></div>
+          <div class="limit-chip"><div class="v">${LEGAL_LIMITS.cintas_carreta}</div><div class="l">Mín. em carretas</div></div>
+          <div class="limit-chip"><div class="v">${LEGAL_LIMITS.cintas_caminhao}</div><div class="l">Mín. em caminhões trucados</div></div>
+        </div>
+      </div>
+
+      <div class="ref-section card">
+        <h2>${t("ref_vehicles")}</h2>
+        <ul class="info-list">${VEHICLE_NOTES.map((v) => `<li>${v}</li>`).join("")}</ul>
+      </div>
+
+      <div class="ref-section card">
+        <h2>${t("ref_gas")}</h2>
+        <p class="lede">${TABELA7.diametro} · Ø bobina ${TABELA7.de_bobina} mm · largura ${TABELA7.largura} mm. ${TABELA7.nota}</p>
+        <div class="ref-table-wrap">
+          <table class="ref-table"><thead><tr><th>Veículo</th><th>Total por carregamento</th></tr></thead>
+          <tbody>${TABELA7.rows.map((r) => `<tr><td>${r.veiculo}</td><td>${r.total}</td></tr>`).join("")}</tbody></table>
+        </div>
+      </div>
+
+      <div class="ref-section card">
+        <h2>${t("ref_gas9")}</h2>
+        <div class="ref-table-wrap">
+          <table class="ref-table"><thead><tr><th>Diâmetro</th><th>Metros</th><th>Barra</th><th>Composição</th><th>Cliente</th></tr></thead>
+          <tbody>${TABELA9.rows.map((r) => `<tr><td>${r.diametro}</td><td>${r.metros}</td><td>${r.barra}</td><td>${r.composicao}</td><td>${r.cliente}</td></tr>`).join("")}</tbody></table>
+        </div>
+      </div>
+
+      <div class="ref-section card">
+        <h2>${t("ref_telescopagem")}</h2>
+        <ul class="info-list">${TELESCOPAGEM.map((x) => `<li>${x}</li>`).join("")}</ul>
+      </div>
+
+      <div class="ref-section card">
+        <h2>Ficha técnica do tubo PEAD (+GF+)</h2>
+        <p class="lede">Válida a partir de 01/11/2025. Dados de referência do fabricante, para consulta junto às capacidades de carregamento já calculadas no Tubby.</p>
+        <ul class="info-list">
+          <li>Material: Polietileno — PE 80 e PE 100</li>
+          <li>Diâmetros de fabricação: 20 mm a 1.600 mm</li>
+          <li>Classe de pressão: até PN25</li>
+          <li>Normas: NBR 15561, ISO 4427, EN 12201, NTS 048, NTS 194, DIN 8074</li>
+          <li>Cores: preto, azul, ou preto com listra azul ou ocre</li>
+          <li>Comprimentos de fabricação: bobinas de 50 e 100 m, barras de 6 a 18 m, ou carretéis de até 2.000 m. Outras dimensões sob consulta.</li>
+          <li>Nota do fabricante: tubos de ramais de água com DE 20 têm espessura mínima de 2,3 mm (SDR 9), mesmo que se especifique SDR 11, conforme NBR 15561.</li>
+        </ul>
+        <div class="source-badge">📄 Ficha técnica PEAD — Georg Fischer, válida a partir de 01/11/2025</div>
+      </div>
+
+      <div class="ref-section card">
+        <h2>${t("ref_source")}</h2>
+        <div class="source-badge">📄 ${SOURCE_LABEL}</div>
+      </div>
+    </div>
+  `;
+}
+
+// --- 12) Loadings list -------------------------------------------------
+function renderLoadingsList() {
+  document.title = t("loadings_title");
+  const list = loadAllLoadings().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  let rows = "";
+  if (list.length) {
+    rows = list.map((l) => `
+      <tr>
+        <td><strong>${escapeHtml(l.name)}</strong></td>
+        <td>${l.client ? escapeHtml(l.client) : "—"}</td>
+        <td>${fmtDate(l.created_at)}</td>
+        <td>
+          <button class="link-like" onclick="navigate('loadings/${l.id}')">${t("view")}</button>
+          <button class="link-like" onclick="navigate('loadings/${l.id}/edit')">${t("edit")}</button>
+          <button class="link-like" style="color:var(--danger)" onclick="deleteLoading(${l.id})">${t("delete")}</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+  app.innerHTML = `
+    <div class="page-wrap">
+      <div class="page-header">
+        <div><h1>${t("loadings_title")}</h1><p>${t("loadings_subtitle")}</p></div>
+        <button class="btn-link" onclick="navigate('loadings/new')">${t("new_loading")}</button>
+      </div>
+      ${list.length ? `
+      <table class="loadings-table">
+        <thead><tr><th>${t("col_name")}</th><th>${t("col_client")}</th><th>${t("col_created")}</th><th>${t("col_actions")}</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>` : `<div class="empty-state">${t("no_loadings_yet")}</div>`}
+    </div>
+  `;
+}
+function deleteLoading(id) {
+  if (!confirm(t("confirm_delete"))) return;
+  saveAllLoadings(loadAllLoadings().filter((l) => l.id !== id));
+  renderLoadingsList();
+}
+window.deleteLoading = deleteLoading;
+
+// --- 13) Loading form (new/edit) ---------------------------------------
+function pipeCatalogOptionsHtml(selectedKey) {
+  let html = `<optgroup label="Bobinas">`;
+  PIPE_CATALOG.filter((i) => i.kind === "bobina").forEach((i) => {
+    html += `<option value="${i.itemKey}" ${i.itemKey === selectedKey ? "selected" : ""}>${i.label}</option>`;
+  });
+  html += `</optgroup><optgroup label="Barras">`;
+  PIPE_CATALOG.filter((i) => i.kind === "barra").forEach((i) => {
+    html += `<option value="${i.itemKey}" ${i.itemKey === selectedKey ? "selected" : ""}>${i.label}</option>`;
+  });
+  html += `</optgroup>`;
+  return html;
+}
+
+function renderLoadingForm(loadingId) {
+  const isEdit = loadingId != null;
+  const list = loadAllLoadings();
+  const existing = isEdit ? list.find((l) => l.id === loadingId) : null;
+  if (isEdit && !existing) { navigate("loadings"); return; }
+  document.title = isEdit ? t("loading_form_title_edit") : t("loading_form_title_new");
+
+  let truckOptions = `<option value="">${t("truck_type_none")}</option>`;
+  TRUCK_OPTIONS.forEach((o) => {
+    truckOptions += `<option value="${o.key}" ${existing && existing.truck_type === o.key ? "selected" : ""}>${o.label}</option>`;
+  });
+
+  app.innerHTML = `
+    <div class="page-wrap">
+      <div class="page-header">
+        <div><h1>${isEdit ? t("loading_form_title_edit") : t("loading_form_title_new")}</h1></div>
+        <button class="btn-secondary-link" onclick="navigate('loadings')">${t("cancel")}</button>
+      </div>
+
+      <div id="name-error" class="error-message" style="margin-bottom:14px;" hidden></div>
+
+      <div class="form-card">
+        <div class="form-row">
+          <div class="form-group">
+            <label>${t("loading_name_label")}</label>
+            <input type="text" id="f-name" placeholder="${t("loading_name_placeholder")}" value="${existing ? escapeHtml(existing.name) : ""}">
+          </div>
+          <div class="form-group">
+            <label>${t("client_label")}</label>
+            <input type="text" id="f-client" placeholder="${t("client_placeholder")}" value="${existing ? escapeHtml(existing.client || "") : ""}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>${t("truck_type_label")}</label>
+            <select id="f-truck-type">${truckOptions}</select>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>${t("notes_label")}</label>
+            <textarea id="f-notes" placeholder="${t("notes_placeholder")}">${existing ? escapeHtml(existing.notes || "") : ""}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2>${t("section_pipes")}</h2>
+        <div id="pipes-container"></div>
+        <button type="button" class="btn-add-row" onclick="addPipeRow()">${t("add_row")}</button>
+      </div>
+
+      <div class="form-card">
+        <h2>${t("section_boxes")}</h2>
+        <div id="boxes-container"></div>
+        <button type="button" class="btn-add-row" onclick="addDimRow('boxes-container')">${t("add_row")}</button>
+      </div>
+
+      <div class="form-card">
+        <h2>${t("section_pallets")}</h2>
+        <div id="pallets-container"></div>
+        <button type="button" class="btn-add-row" onclick="addDimRow('pallets-container')">${t("add_row")}</button>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-secondary-link" onclick="navigate('loadings')">${t("cancel")}</button>
+        <button class="btn-link" onclick="submitLoadingForm(${isEdit ? loadingId : "null"})">${t("save_loading")}</button>
+      </div>
+    </div>
+  `;
+
+  if (existing) {
+    (existing.pipes || []).forEach((p) => addPipeRow(p.itemKey, p.quantity, p.weight_kg));
+    (existing.boxes || []).forEach((b) => addDimRow("boxes-container", b));
+    (existing.pallets || []).forEach((p) => addDimRow("pallets-container", p));
+  } else {
+    addPipeRow();
+  }
+}
+
+function addPipeRow(itemKey, quantity, weight) {
+  const div = document.createElement("div");
+  div.className = "item-row dims";
+  div.style.gridTemplateColumns = "2.4fr 1fr 1fr auto";
+  div.innerHTML = `
+    <div><select class="pipe-item">${pipeCatalogOptionsHtml(itemKey)}</select></div>
+    <div><input type="number" class="pipe-quantity" min="0" value="${quantity != null ? quantity : 1}" placeholder="${t("quantity_col")}"></div>
+    <div><input type="number" step="0.1" class="pipe-weight" value="${weight != null ? weight : ""}" placeholder="${t("weight_col")}"></div>
+    <button type="button" class="btn-remove-row" onclick="this.closest('.item-row').remove()">${t("remove_row")}</button>
+  `;
+  document.getElementById("pipes-container").appendChild(div);
+}
+window.addPipeRow = addPipeRow;
+
+function addDimRow(containerId, row) {
+  const div = document.createElement("div");
+  div.className = "item-row dims";
+  const r = row || {};
+  div.innerHTML = `
+    <div><input type="text" class="dim-desc" value="${r.description ? escapeHtml(r.description) : ""}" placeholder="${t("description_col")}"></div>
+    <div><input type="number" class="dim-qty" min="1" value="${r.quantity != null ? r.quantity : 1}" placeholder="${t("quantity_col")}"></div>
+    <div><input type="number" step="0.01" class="dim-length" value="${r.length_m != null ? r.length_m : ""}" placeholder="${t("length_col")}"></div>
+    <div><input type="number" step="0.01" class="dim-width" value="${r.width_m != null ? r.width_m : ""}" placeholder="${t("width_col")}"></div>
+    <div><input type="number" step="0.01" class="dim-height" value="${r.height_m != null ? r.height_m : ""}" placeholder="${t("height_col")}"></div>
+    <div><input type="number" step="0.1" class="dim-weight" value="${r.weight_kg != null ? r.weight_kg : ""}" placeholder="${t("weight_col")}"></div>
+    <button type="button" class="btn-remove-row" onclick="this.closest('.item-row').remove()">${t("remove_row")}</button>
+  `;
+  document.getElementById(containerId).appendChild(div);
+}
+window.addDimRow = addDimRow;
+
+function submitLoadingForm(loadingId) {
+  const name = document.getElementById("f-name").value.trim();
+  const nameError = document.getElementById("name-error");
+  if (!name) { nameError.textContent = t("name_required_error"); nameError.hidden = false; return; }
+  nameError.hidden = true;
+
+  const client = document.getElementById("f-client").value.trim();
+  const truckType = document.getElementById("f-truck-type").value || null;
+  const notes = document.getElementById("f-notes").value.trim();
+
+  const pipes = [];
+  document.querySelectorAll("#pipes-container .item-row").forEach((row) => {
+    const itemKey = row.querySelector(".pipe-item").value;
+    const qty = row.querySelector(".pipe-quantity").value;
+    const wt = row.querySelector(".pipe-weight").value;
+    if (itemKey && qty) pipes.push({ itemKey, quantity: parseInt(qty, 10), weight_kg: wt ? parseFloat(wt) : null });
+  });
+
+  function parseDimRows(containerId) {
+    const out = [];
+    document.querySelectorAll(`#${containerId} .item-row`).forEach((row) => {
+      const desc = row.querySelector(".dim-desc").value.trim();
+      if (!desc) return;
+      const qty = row.querySelector(".dim-qty").value;
+      const l = row.querySelector(".dim-length").value;
+      const w = row.querySelector(".dim-width").value;
+      const h = row.querySelector(".dim-height").value;
+      const wt = row.querySelector(".dim-weight").value;
+      out.push({
+        description: desc, quantity: qty ? parseInt(qty, 10) : 1,
+        length_m: l ? parseFloat(l) : null, width_m: w ? parseFloat(w) : null,
+        height_m: h ? parseFloat(h) : null, weight_kg: wt ? parseFloat(wt) : null,
+      });
+    });
+    return out;
+  }
+  const boxes = parseDimRows("boxes-container");
+  const pallets = parseDimRows("pallets-container");
+
+  const list = loadAllLoadings();
+  const nowIso = new Date().toISOString();
+
+  if (loadingId == null) {
+    const id = nextId(list);
+    list.push({ id, name, client, truck_type: truckType, notes, pipes, boxes, pallets, created_at: nowIso, updated_at: nowIso });
+    saveAllLoadings(list);
+    navigate(`loadings/${id}`);
+  } else {
+    const idx = list.findIndex((l) => l.id === loadingId);
+    if (idx === -1) { navigate("loadings"); return; }
+    list[idx] = { ...list[idx], name, client, truck_type: truckType, notes, pipes, boxes, pallets, updated_at: nowIso };
+    saveAllLoadings(list);
+    navigate(`loadings/${loadingId}`);
+  }
+}
+window.submitLoadingForm = submitLoadingForm;
+
+// --- 14) Loading summary -----------------------------------------------------
+function renderLoadingSummary(loadingId) {
+  const list = loadAllLoadings();
+  const loading = list.find((l) => l.id === loadingId);
+  if (!loading) { navigate("loadings"); return; }
+  document.title = `${t("summary_title")} — ${loading.name}`;
+
+  let totalWeight = 0;
+  let totalItems = 0;
+  const pipeRows = (loading.pipes || []).map((p) => {
+    const item = PIPE_CATALOG_BY_KEY[p.itemKey];
+    totalItems += 1;
+    if (p.weight_kg) totalWeight += p.weight_kg * p.quantity;
+    return { label: item ? item.label : p.itemKey, quantity: p.quantity, weight_kg: p.weight_kg, itemKey: p.itemKey };
+  });
+  [...(loading.boxes || []), ...(loading.pallets || [])].forEach((row) => {
+    totalItems += 1;
+    if (row.weight_kg) totalWeight += row.weight_kg * row.quantity;
+  });
+  totalWeight = Math.round(totalWeight * 10) / 10;
+
+  let fitsInfoHtml = "";
+  if (loading.truck_type && TRUCK_OPTIONS_BY_KEY[loading.truck_type]) {
+    const truckOpt = TRUCK_OPTIONS_BY_KEY[loading.truck_type];
+    const relevant = pipeRows.filter((p) => p.itemKey.startsWith(truckOpt.kind + "|"));
+    if (relevant.length) {
+      let allFit = true;
+      relevant.forEach((p) => {
+        const cap = capacityFor(p.itemKey, truckOpt.vehicleKey);
+        if (cap == null || p.quantity > cap) allFit = false;
+      });
+      fitsInfoHtml = `<div class="fit-pill ${allFit ? "ok" : "no"}">${allFit ? t("summary_fits_yes") : t("summary_fits_no")}</div>
+        <div class="spec-note" style="margin-top:8px;">${t("summary_fits_partial")}</div>`;
+    }
+  }
+
+  function pipesTable() {
+    if (!pipeRows.length) return `<p class="summary-empty">${t("no_items_in_section")}</p>`;
+    return `<table class="summary-table"><tbody>${pipeRows.map((p) => `
+      <tr><td>${escapeHtml(p.label)}</td><td class="num">×${p.quantity}</td><td class="num">${p.weight_kg ? (p.weight_kg * p.quantity).toFixed(1) + " kg" : "—"}</td></tr>
+    `).join("")}</tbody></table>`;
+  }
+  function dimsTable(rows) {
+    if (!rows.length) return `<p class="summary-empty">${t("no_items_in_section")}</p>`;
+    return `<table class="summary-table"><tbody>${rows.map((r) => `
+      <tr>
+        <td>${escapeHtml(r.description)}${r.length_m && r.width_m && r.height_m ? ` (${r.length_m}×${r.width_m}×${r.height_m} m)` : ""}</td>
+        <td class="num">×${r.quantity}</td>
+        <td class="num">${r.weight_kg ? (r.weight_kg * r.quantity).toFixed(1) + " kg" : "—"}</td>
+      </tr>
+    `).join("")}</tbody></table>`;
+  }
+  app.innerHTML = `
+    <div class="page-wrap">
+      <div class="page-header">
+        <button class="btn-secondary-link" onclick="navigate('loadings')">${t("back_to_loadings")}</button>
+      </div>
+      <div class="summary-card">
+        <div class="summary-header">
+          <div>
+            <span class="summary-badge">${logoMark(22)}</span>
+            <h1>${escapeHtml(loading.name)}</h1>
+            <div class="summary-meta">
+              ${t("summary_created")}: ${fmtDate(loading.created_at)}<br>
+              ${loading.updated_at !== loading.created_at ? `${t("summary_updated")}: ${fmtDate(loading.updated_at)}<br>` : ""}
+              ${loading.client ? `${t("summary_client")}: ${escapeHtml(loading.client)}<br>` : ""}
+              ${loading.truck_type && TRUCK_OPTIONS_BY_KEY[loading.truck_type] ? `${t("summary_truck")}: ${TRUCK_OPTIONS_BY_KEY[loading.truck_type].label}` : ""}
+            </div>
+          </div>
+          ${fitsInfoHtml}
+        </div>
+
+        ${loading.notes ? `<div class="summary-section"><h3>${t("summary_notes")}</h3><p style="font-size:13.5px;margin:0;">${escapeHtml(loading.notes)}</p></div>` : ""}
+
+        <div class="summary-section"><h3>${t("section_pipes")}</h3>${pipesTable()}</div>
+        <div class="summary-section"><h3>${t("section_boxes")}</h3>${dimsTable(loading.boxes || [])}</div>
+        <div class="summary-section"><h3>${t("section_pallets")}</h3>${dimsTable(loading.pallets || [])}</div>
+
+        <div class="summary-totals">
+          <div class="summary-total-item"><div class="label">${t("summary_total_weight")}</div><div class="value">${totalWeight.toFixed(1)} kg</div></div>
+          <div class="summary-total-item"><div class="label">${t("summary_total_items")}</div><div class="value">${totalItems}</div></div>
+        </div>
+
+        <div class="summary-actions">
+          <button class="btn-link" onclick="window.print()">${t("print_button")}</button>
+          <button class="btn-secondary-link" onclick="navigate('loadings/${loading.id}/edit')">${t("edit")}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// --- 15) Boot ---------------------------------------------------------------
+router();
+
+</script>
+</body>
+</html>
