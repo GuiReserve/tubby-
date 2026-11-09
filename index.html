@@ -1705,11 +1705,11 @@ function mistaFillModes(elMode, f, caps) {
   let html = "";
   if (f.vehicles.length > 1) {
     const ok = caps.every((c) => c != null);
-    html += `<option value="mix"${ok ? "" : " disabled"}>Misturar carretas e trucks (menos carregamentos)${ok ? "" : " — não consta no procedimento"}</option>`;
+    html += `<option value="mix"${ok ? "" : " disabled"}>Misturar carretas e trucks${ok ? "" : " — não consta no procedimento"}</option>`;
   }
   f.vehicles.forEach((vk, i) => {
     const blocked = caps[i] == null;
-    html += `<option value="${i}"${blocked ? " disabled" : ""}>${f.vehicles.length > 1 ? "Somente " : ""}${vehicleMeta(vk).label} (${vehicleMeta(vk).sub})${blocked ? " — não consta no procedimento" : ""}</option>`;
+    html += `<option value="${i}"${blocked ? " disabled" : ""}>${f.vehicles.length > 1 ? "Somente " : ""}${vehicleMeta(vk).label}${blocked ? " — não consta no procedimento" : ""}</option>`;
   });
   elMode.innerHTML = html;
   const opts = [...elMode.options];
@@ -2356,7 +2356,7 @@ BARRAS_DATA.forEach((row) => [12, 6].forEach((len) => {
 FLEETS.unshift(
   { key: "mista12", label: "Bobinas + barras de 12 m — Carreta", kind: "mista", barLen: 12, vehicles: ["mix_carreta12"] },
   { key: "mista6", label: "Bobinas + barras de 6 m — Carreta + Truck", kind: "mista", barLen: 6, vehicles: ["mix_carreta6", "mix_truck6"] },
-  { key: "mista612", label: "Barras de 6 m + 12 m (com ou sem bobinas) — Carreta + Truck", kind: "mista", mixLen: true, barLen: null, vehicles: ["mix_carreta612", "mix_truck612"] },
+  { key: "mista612", label: "Barras de 6 m + 12 m — Carreta + Truck", kind: "mista", mixLen: true, barLen: null, vehicles: ["mix_carreta612", "mix_truck612"] },
 );
 const MISTA_MIN_FILL = 0.5; // cada veículo deve sair com pelo menos metade da carga preenchida
 function vehicleMeta(vk) { return BOBINAS_VEHICLES[vk] || BARRAS_VEHICLES[vk] || MIX_VEHICLES[vk]; }
@@ -2507,8 +2507,8 @@ function renderMistaCalc() {
 
   function fillModes() {
     const f = currentFleet();
-    let html = f.vehicles.length > 1 ? `<option value="mix">Misturar carretas e trucks (menos carregamentos)</option>` : "";
-    f.vehicles.forEach((vk, i) => { html += `<option value="${f.vehicles.length > 1 ? i : "0"}">${f.vehicles.length > 1 ? "Somente " : ""}${vehicleMeta(vk).label} (${vehicleMeta(vk).sub})</option>`; });
+    let html = f.vehicles.length > 1 ? `<option value="mix">Misturar carretas e trucks</option>` : "";
+    f.vehicles.forEach((vk, i) => { html += `<option value="${f.vehicles.length > 1 ? i : "0"}">${f.vehicles.length > 1 ? "Somente " : ""}${vehicleMeta(vk).label}</option>`; });
     elMode.innerHTML = html;
     document.getElementById("m-mode-wrap").style.display = f.vehicles.length > 1 ? "" : "none";
     if (f.vehicles.length === 1) elMode.value = "0";
