@@ -1404,7 +1404,8 @@ const TRUCK_OPTIONS_BY_KEY = Object.fromEntries(TRUCK_OPTIONS.map((o) => [o.key,
 function capacityFor(itemKey, vehicleKey) {
   const item = PIPE_CATALOG_BY_KEY[itemKey];
   if (!item) return null;
-  if (MIX_VEHICLES[vehicleKey]) vehicleKey = MIX_VEHICLES[vehicleKey][item.kind];
+  const mix = MIX_VEHICLES[vehicleKey];
+  if (mix) vehicleKey = (item.barLen && mix["barra" + item.barLen]) || mix[item.kind];
   const v = item.data[vehicleKey];
   return v == null ? null : v;
 }
@@ -2340,10 +2341,20 @@ const MIX_VEHICLES = {
   mix_carreta12: { label: "Carreta", sub: "bobinas + barras de 12 m", kind: "trailer", bobina: "bobinadeira", barra: "carreta_12m" },
   mix_carreta6: { label: "Carreta", sub: "bobinas + barras de 6 m", kind: "trailer", bobina: "bobinadeira", barra: "carreta_6m" },
   mix_truck6: { label: "Caminhão Truck", sub: "bobinas + barras de 6 m", kind: "truck", bobina: "truck_aberto", barra: "truck_6m" },
+  mix_carreta612: { label: "Carreta", sub: "barras de 6 m e 12 m (+ bobinas)", kind: "trailer", bobina: "bobinadeira", barra12: "carreta_12m", barra6: "carreta_6m" },
 };
+// Barras de 6 m e de 12 m na mesma carreta: cada barra ganha dois itens ("…@12" e "…@6"), e cada um
+// ocupa a fração da carreta que o procedimento dá para aquele comprimento (duas barras de 6 m
+// ocupam o lugar de uma de 12 m, ponta com ponta).
+BARRAS_DATA.forEach((row) => [12, 6].forEach((len) => {
+  const base = PIPE_CATALOG_BY_KEY[`barra|${row.key}`];
+  const key = `${base.itemKey}@${len}`;
+  PIPE_CATALOG_BY_KEY[key] = { ...base, itemKey: key, barLen: len, label: `${base.label} — ${len} m` };
+}));
 FLEETS.unshift(
   { key: "mista12", label: "Bobinas + barras de 12 m — Carreta", kind: "mista", barLen: 12, vehicles: ["mix_carreta12"] },
   { key: "mista6", label: "Bobinas + barras de 6 m — Carreta + Truck", kind: "mista", barLen: 6, vehicles: ["mix_carreta6", "mix_truck6"] },
+  { key: "mista612", label: "Barras de 6 m + 12 m (com ou sem bobinas) — Carreta", kind: "mista", mixLen: true, barLen: null, vehicles: ["mix_carreta612"] },
 );
 const MISTA_MIN_FILL = 0.5; // cada veículo deve sair com pelo menos metade da carga preenchida
 function vehicleMeta(vk) { return BOBINAS_VEHICLES[vk] || BARRAS_VEHICLES[vk] || MIX_VEHICLES[vk]; }
@@ -2425,11 +2436,17 @@ function mistaRebalance(items, res) {
     for (const l of low) {
       const donors = V.map((_, k) => k).filter((k) => k !== l && frac(k) >= MISTA_MIN_FILL - 1e-9).sort((p, q) => frac(q) - frac(p));
       for (const d of donors) {
-        for (let i = 0; i < items.length; i++) {
+        // primeiro os tubos que o veículo vazio já leva, para não espalhar o mesmo tubo por vários veículos
+        const order = items.map((_, i) => i).sort((p, q) => (cnt[l][q] > 0) - (cnt[l][p] > 0));
+        for (const i of order) {
+          if (frac(l) >= MISTA_MIN_FILL - 1e-9) break;
           if (cnt[d][i] <= 0 || !(capOf(l, i) > 0)) continue;
           const room = Math.floor((1 - frac(l)) * capOf(l, i) + 1e-9);
           const spare = Math.floor((frac(d) - MISTA_MIN_FILL) * capOf(d, i) + 1e-9);
-          const m = Math.min(cnt[d][i], room, spare);
+          const need = Math.ceil((MISTA_MIN_FILL - frac(l)) * capOf(l, i) - 1e-9);
+          // se cabe tudo, junta o tubo inteiro num veículo só; senão, move só o necessário para chegar a 50%
+          const all = cnt[l][i] > 0 && cnt[d][i] <= Math.min(room, spare);
+          const m = all ? cnt[d][i] : Math.min(cnt[d][i], room, spare, need);
           if (m <= 0) continue;
           cnt[d][i] -= m; cnt[l][i] += m; moved = true;
         }
@@ -2480,7 +2497,7 @@ function renderMistaCalc() {
   const elRows = document.getElementById("m-rows");
   const elError = document.getElementById("m-error");
   const elResult = document.getElementById("m-result");
-  let lastKind = null;
+  let lastKind = null, lastFleet = null;
 
   const currentFleet = () => FLEETS.find((f) => f.key === elFleet.value);
   // índices (dentro de fleet.vehicles) dos veículos permitidos pela composição escolhida
@@ -2498,7 +2515,10 @@ function renderMistaCalc() {
   function itemOptionsHtml(selected) {
     const f = currentFleet(), types = activeTypes();
     let html = `<option value="">Selecione o tubo</option>`;
-    PIPE_CATALOG.filter((i) => f.kind === "mista" || i.kind === f.kind).forEach((i) => {
+    const catalog = f.mixLen
+      ? PIPE_CATALOG.flatMap((i) => i.kind === "barra" ? [PIPE_CATALOG_BY_KEY[i.itemKey + "@12"], PIPE_CATALOG_BY_KEY[i.itemKey + "@6"]] : [i])
+      : PIPE_CATALOG.filter((i) => f.kind === "mista" || i.kind === f.kind);
+    catalog.forEach((i) => {
       const blocked = !types.some((ti) => capacityFor(i.itemKey, f.vehicles[ti]) != null);
       html += `<option value="${i.itemKey}"${blocked ? " disabled" : ""}${i.itemKey === selected ? " selected" : ""}>${i.label}${blocked ? " — não consta no procedimento" : ""}</option>`;
     });
@@ -2528,9 +2548,14 @@ function renderMistaCalc() {
     const wl = weightSdrs(item.diam, item.kind === "bobina" ? item.sdr : null);
     sel.innerHTML = wl.length ? sdrOptionsHtml(wl, wl.includes(sel.value) ? sel.value : (item.kind === "bobina" ? wl[0] : defaultSdr(wl))) : `<option value="">—</option>`;
   }
-  function refreshItemOptions() {
+  function refreshItemOptions(prevFleet) {
+    const f = currentFleet();
     elRows.querySelectorAll(".m-item").forEach((sel) => {
-      const prev = sel.value;
+      let prev = sel.value;
+      // ao trocar de frota, mantém a barra escolhida no comprimento certo ("barra|90" ↔ "barra|90@12")
+      const m = prev.match(/^(barra\|.+)@(\d+)$/);
+      if (f.mixLen && !m && prev.startsWith("barra|") && prevFleet && prevFleet.barLen) prev = `${prev}@${prevFleet.barLen}`;
+      else if (!f.mixLen && m) prev = f.barLen === parseInt(m[2], 10) ? m[1] : "";
       sel.innerHTML = itemOptionsHtml(prev);
       const chosen = sel.selectedOptions[0];
       if (chosen && chosen.disabled) sel.value = "";
@@ -2541,9 +2566,9 @@ function renderMistaCalc() {
   function onFleetChange() {
     const f = currentFleet();
     fillModes();
-    document.getElementById("m-mat").innerHTML = f.kind === "barra" ? svgBarras() : svgBobina();
-    if (lastKind !== null && lastKind !== f.kind) { elRows.innerHTML = ""; addRow(); } else refreshItemOptions();
-    lastKind = f.kind;
+    document.getElementById("m-mat").innerHTML = f.kind === "barra" || f.mixLen ? svgBarras() : svgBobina();
+    if (lastKind !== null && lastKind !== f.kind) { elRows.innerHTML = ""; addRow(); } else refreshItemOptions(lastFleet);
+    lastKind = f.kind; lastFleet = f;
     calc();
   }
   function onModeChange() { refreshItemOptions(); calc(); }
@@ -2569,7 +2594,7 @@ function renderMistaCalc() {
       if (!item) return;
       const caps = f.vehicles.map((vk) => capacityFor(key, vk));
       if (!types.some((ti) => caps[ti] != null)) return;
-      const unitLen = item.kind === "bobina" ? (parseFloat(item.length) || 100) : f.barLen;
+      const unitLen = item.kind === "bobina" ? (parseFloat(item.length) || 100) : (item.barLen || f.barLen);
       items.push({ item, meters, unitLen, units: Math.ceil(meters / unitLen - 1e-9), caps, kgm: kgmFor(item.diam, row.querySelector(".m-sdr").value), woodKg: item.kind === "barra" ? woodPerBar(item.diam, unitLen) : 0 });
     });
     if (invalid) { elError.textContent = t("err_negative"); elError.hidden = false; elResult.hidden = true; return; }
