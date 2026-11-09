@@ -1685,6 +1685,7 @@ function mistaShowResult(p, f, types, items) {
   if (lowFill.length) extra += `<div style="margin-top:8px;font-size:13px">⚠ Pouca carga em: ${lowFill.join(", ")}.</div>`;
   if (estUsed) extra += `<div style="margin-top:6px;font-size:12px">⚠ Capacidade da Bobinadeira estimada.</div>`;
   if (barEstUsed) extra += `<div style="margin-top:6px;font-size:12px">⚠ Barra 63 mm: capacidade estimada (não consta no procedimento), pelo mesmo espaço de carga da barra de 75 mm: 1.015 barras por carreta (12 m) ou truck (6 m). Confirme com a Logística.</div>`;
+  if (items.some((it) => it.item.barLen === 6) && items.some((it) => it.item.barLen === 12)) extra += `<div style="margin-top:6px;font-size:12px">⚠ Barras de 6 m e 12 m na mesma carreta: duas barras de 6 m ocupam o lugar de uma de 12 m, ponta com ponta. Confirme a arrumação com a Logística.</div>`;
   if (combined) extra += `<div style="margin-top:6px;font-size:12px">⚠ Bobinas e barras no mesmo veículo: cada tubo ocupa a parte da capacidade que o procedimento dá para ele, somando no máximo 100%. O procedimento não tem regra de carga combinada; confirme a arrumação com a Logística.</div>`;
   extra += `</div>`;
   extra += `<div style="font-size:12px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;opacity:.8">Peso da carga</div>`;
@@ -2341,9 +2342,9 @@ const MIX_VEHICLES = {
   mix_carreta12: { label: "Carreta", sub: "bobinas + barras de 12 m", kind: "trailer", bobina: "bobinadeira", barra: "carreta_12m" },
   mix_carreta6: { label: "Carreta", sub: "bobinas + barras de 6 m", kind: "trailer", bobina: "bobinadeira", barra: "carreta_6m" },
   mix_truck6: { label: "Caminhão Truck", sub: "bobinas + barras de 6 m", kind: "truck", bobina: "truck_aberto", barra: "truck_6m" },
-  mix_carreta612: { label: "Carreta", sub: "barras de 6 m e 12 m (+ bobinas)", kind: "trailer", bobina: "bobinadeira", barra12: "carreta_12m", barra6: "carreta_6m" },
+  mix_carreta612: { label: "Carreta", sub: "barras de 6 m e 12 m", kind: "trailer", barra12: "carreta_12m", barra6: "carreta_6m" },
   // o truck só leva barra de 6 m: a de 12 m não tem capacidade definida para ele e fica de fora
-  mix_truck612: { label: "Caminhão Truck", sub: "barras de 6 m (+ bobinas)", kind: "truck", bobina: "truck_aberto", barra6: "truck_6m" },
+  mix_truck612: { label: "Caminhão Truck", sub: "barras de 6 m", kind: "truck", barra6: "truck_6m" },
 };
 // Barras de 6 m e de 12 m na mesma carreta: cada barra ganha dois itens ("…@12" e "…@6"), e cada um
 // ocupa a fração da carreta que o procedimento dá para aquele comprimento (duas barras de 6 m
@@ -2518,7 +2519,7 @@ function renderMistaCalc() {
     const f = currentFleet(), types = activeTypes();
     let html = `<option value="">Selecione o tubo</option>`;
     const catalog = f.mixLen
-      ? PIPE_CATALOG.flatMap((i) => i.kind === "barra" ? [PIPE_CATALOG_BY_KEY[i.itemKey + "@12"], PIPE_CATALOG_BY_KEY[i.itemKey + "@6"]] : [i])
+      ? PIPE_CATALOG.flatMap((i) => i.kind === "barra" ? [PIPE_CATALOG_BY_KEY[i.itemKey + "@12"], PIPE_CATALOG_BY_KEY[i.itemKey + "@6"]] : []) // só barras, sem bobinas
       : PIPE_CATALOG.filter((i) => f.kind === "mista" || i.kind === f.kind);
     catalog.forEach((i) => {
       const blocked = !types.some((ti) => capacityFor(i.itemKey, f.vehicles[ti]) != null);
