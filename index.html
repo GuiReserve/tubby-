@@ -2342,6 +2342,8 @@ const MIX_VEHICLES = {
   mix_carreta6: { label: "Carreta", sub: "bobinas + barras de 6 m", kind: "trailer", bobina: "bobinadeira", barra: "carreta_6m" },
   mix_truck6: { label: "Caminhão Truck", sub: "bobinas + barras de 6 m", kind: "truck", bobina: "truck_aberto", barra: "truck_6m" },
   mix_carreta612: { label: "Carreta", sub: "barras de 6 m e 12 m (+ bobinas)", kind: "trailer", bobina: "bobinadeira", barra12: "carreta_12m", barra6: "carreta_6m" },
+  // o truck só leva barra de 6 m: a de 12 m não tem capacidade definida para ele e fica de fora
+  mix_truck612: { label: "Caminhão Truck", sub: "barras de 6 m (+ bobinas)", kind: "truck", bobina: "truck_aberto", barra6: "truck_6m" },
 };
 // Barras de 6 m e de 12 m na mesma carreta: cada barra ganha dois itens ("…@12" e "…@6"), e cada um
 // ocupa a fração da carreta que o procedimento dá para aquele comprimento (duas barras de 6 m
@@ -2354,7 +2356,7 @@ BARRAS_DATA.forEach((row) => [12, 6].forEach((len) => {
 FLEETS.unshift(
   { key: "mista12", label: "Bobinas + barras de 12 m — Carreta", kind: "mista", barLen: 12, vehicles: ["mix_carreta12"] },
   { key: "mista6", label: "Bobinas + barras de 6 m — Carreta + Truck", kind: "mista", barLen: 6, vehicles: ["mix_carreta6", "mix_truck6"] },
-  { key: "mista612", label: "Barras de 6 m + 12 m (com ou sem bobinas) — Carreta", kind: "mista", mixLen: true, barLen: null, vehicles: ["mix_carreta612"] },
+  { key: "mista612", label: "Barras de 6 m + 12 m (com ou sem bobinas) — Carreta + Truck", kind: "mista", mixLen: true, barLen: null, vehicles: ["mix_carreta612", "mix_truck612"] },
 );
 const MISTA_MIN_FILL = 0.5; // cada veículo deve sair com pelo menos metade da carga preenchida
 function vehicleMeta(vk) { return BOBINAS_VEHICLES[vk] || BARRAS_VEHICLES[vk] || MIX_VEHICLES[vk]; }
@@ -2520,7 +2522,7 @@ function renderMistaCalc() {
       : PIPE_CATALOG.filter((i) => f.kind === "mista" || i.kind === f.kind);
     catalog.forEach((i) => {
       const blocked = !types.some((ti) => capacityFor(i.itemKey, f.vehicles[ti]) != null);
-      html += `<option value="${i.itemKey}"${blocked ? " disabled" : ""}${i.itemKey === selected ? " selected" : ""}>${i.label}${blocked ? " — não consta no procedimento" : ""}</option>`;
+      html += `<option value="${i.itemKey}"${blocked ? " disabled" : ""}${i.itemKey === selected ? " selected" : ""}>${i.label}${blocked ? (i.barLen === 12 && f.mixLen ? " — 12 m não vai no truck" : " — não consta no procedimento") : ""}</option>`;
     });
     return html;
   }
